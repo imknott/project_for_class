@@ -14,11 +14,13 @@ GoogleSignIn _googleSignIn = GoogleSignIn(
   ],
 );
 
-Future<void> main() async{
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseUIAuth.configureProviders([
-    GoogleProvider(clientId: '2140837077-r49kb10s2pinna6o3fh94o6f301hsmj6.apps.googleusercontent.com'),
+    GoogleProvider(
+        clientId:
+            '2140837077-r49kb10s2pinna6o3fh94o6f301hsmj6.apps.googleusercontent.com'),
   ]);
   runApp(MyApp());
 }
@@ -29,7 +31,8 @@ class MyApp extends StatelessWidget {
     var providers = [EmailAuthProvider()];
 
     return MaterialApp(
-      initialRoute: FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/profile',
+      initialRoute:
+          FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/profile',
       routes: {
         '/sign-in': (context) {
           return SignInScreen(
@@ -38,7 +41,18 @@ class MyApp extends StatelessWidget {
               AuthStateChangeAction<SignedIn>((context, state) {
                 Navigator.pushReplacementNamed(context, '/profile');
               }),
+              ForgotPasswordAction((context, email) {
+                Navigator.pushNamed(
+                  context,
+                  '/forgot-password',
+                  arguments: {'email': email},
+                );
+              }),
             ],
+          );
+        },
+        '/forgot-password': (context){
+          return const ForgotPasswordScreen(
           );
         },
         '/profile': (context) {
@@ -55,4 +69,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
