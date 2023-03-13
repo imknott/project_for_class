@@ -12,11 +12,12 @@ class OnboardingScreen extends StatelessWidget {
         child: Column(
           children: [
             Image.asset('images/flame-success.png'),
+            Text('Track your favorite teams, players, and upcoming matches'),
             TextButton(onPressed:() =>  Navigator.pushNamed(context, '/register'),style: TextButton.styleFrom(
               foregroundColor: Colors.black,
               backgroundColor: Colors.amber,
             ), child: const Text("Register Now.")),
-            TextButton(onPressed:() =>  Navigator.pushNamed(context, '/signin'),style: TextButton.styleFrom(
+            TextButton(onPressed:() =>  Navigator.pushNamed(context, '/league'),style: TextButton.styleFrom(
               foregroundColor: Colors.black,
               backgroundColor: Colors.amber,
             ), child: const Text("Register Later."))
