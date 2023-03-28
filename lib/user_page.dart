@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:project_for_class/onboarding_page.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({Key? key}) : super(key: key);
@@ -71,7 +73,7 @@ class _UserPageState extends State<UserPage> {
                       controller: _usernameController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: 'Username',
+                        labelText: "${FirebaseAuth.instance.currentUser?.email}",
                       ),
                     ),
                   ),
@@ -82,18 +84,7 @@ class _UserPageState extends State<UserPage> {
                       controller: _passwordController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: 'Password',
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10,),
-                  SizedBox(
-                    width: 350,
-                    child: TextField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Email',
+                        labelText: '************',
                       ),
                     ),
                   ),
@@ -190,6 +181,7 @@ class _UserPageState extends State<UserPage> {
               padding: EdgeInsets.fromLTRB(20, 10, 300, 0),
               child: Column(
                 children: [
+
                   TextButton(
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.black12
@@ -197,11 +189,13 @@ class _UserPageState extends State<UserPage> {
                     onPressed: () {
                       final snackBar = SnackBar(
                         content: const Text(
-                            'You haven\'t actually log-inned yet',
+                            'Are you sure you would like to sign out?',
                         ),
                         action: SnackBarAction(
-                          label: 'Okay',
+                          label: 'Yes',
                           onPressed: () {
+                            FirebaseAuth.instance.signOut();
+                            Navigator.pushNamed(context, '/onboard');
                             // Some code to undo the change.
                           },
                         ),
@@ -220,11 +214,12 @@ class _UserPageState extends State<UserPage> {
                     onPressed: () {
                       final snackBar = SnackBar(
                         content: const Text(
-                          'You don\'t have an account to delete',
+                          'Your account shall be deleted is that',
                         ),
                         action: SnackBarAction(
-                          label: 'Okay',
+                          label: 'Yes',
                           onPressed: () {
+                            FirebaseAuth.instance.currentUser?.delete();
                             // Some code to undo the change.
                           },
                         ),

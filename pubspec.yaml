@@ -16,6 +16,7 @@ dependencies:
   firebase_ui_auth: ^1.1.15
   google_sign_in: ^6.0.2
   firebase_ui_oauth_google: ^1.0.22
+  cloud_firestore: ^4.4.5
 
 dev_dependencies:
   flutter_test:
@@ -28,4 +29,8 @@ flutter:
 
   uses-material-design: true
   assets:
-    - images/
+    - images/Logo-NBA.png
+    - images/mlbLogo.png
+    - images/mlsCrestLogo.png
+    - images/nflLogo.png
+    - images/flame-success.png

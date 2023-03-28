@@ -9,9 +9,12 @@ class NBALeagueTable extends StatefulWidget {
 
   NBALeagueTable(this.leagueName);
 
+
   @override
   State<NBALeagueTable> createState() => _NBALeagueTableState(leagueName);
 }
+
+
 
 class _NBALeagueTableState extends State<NBALeagueTable> {
 
@@ -22,9 +25,9 @@ class _NBALeagueTableState extends State<NBALeagueTable> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Colors.blueGrey,
       //extendBodyBehindAppBar: true,
-      appBar: AppBar(
+      appBar: AppBar(backgroundColor: Colors.amber,
         centerTitle: true,
         title: Text(leagueName),
         actions: <Widget>[
