@@ -1,4 +1,3 @@
-
 //this file will hold color themes, and data constructs
 import 'dart:io';
 
@@ -9,10 +8,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:project_for_class/schedule.dart';
 
-
 class nbaApi {
-
-
   final String apiUrl =
       "https://api-nba-v1.p.rapidapi.com/teams?conference=East";
 
@@ -23,9 +19,7 @@ class nbaApi {
 
 // the west and east team class will hold the data for nba teams.
 
-
 //this pulls a team from the eastern conference
-
 
   Future<List<EastTeam>> fetchEastTeam() async {
     var body;
@@ -35,7 +29,7 @@ class nbaApi {
       if (res.statusCode == 200) {
         var resMap = json.decode(res.body)['response'] as List;
         final modelList =
-        resMap.map<EastTeam>((e) => EastTeam.fromJson(e)).toList();
+            resMap.map<EastTeam>((e) => EastTeam.fromJson(e)).toList();
         return modelList;
       } else {
         throw Exception("Failed to load data from API");
@@ -53,7 +47,7 @@ class nbaApi {
       if (res.statusCode == 200) {
         var resMap = json.decode(res.body)['response'] as List;
         final modelList =
-        resMap.map<WestTeam>((e) => WestTeam.fromJson(e)).toList();
+            resMap.map<WestTeam>((e) => WestTeam.fromJson(e)).toList();
         return modelList;
       } else {
         throw Exception("Failed to load data from API");
@@ -64,15 +58,18 @@ class nbaApi {
   }
 
   Future<List<Scores>> getTodayGames() async {
+    DateTime timeToday = DateTime(2023, 04, 01);
+    String timeStr = "${timeToday.year}-0${timeToday.month}-0${timeToday.day}";
+    print(timeStr);
     try {
       Response res = await get(
-          Uri.parse('https://api-nba-v1.p.rapidapi.com/games?date=2023-03-28'),
+          Uri.parse('https://api-nba-v1.p.rapidapi.com/games?date=$timeStr'),
           headers: headers);
       if (res.statusCode == 200) {
         var homeMap = json.decode(res.body)['response'] as List;
         print(json.decode(res.body));
         final homeList =
-        homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
+            homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
         return homeList;
       } else {
         throw Exception("Failed to load data from API");
@@ -82,16 +79,37 @@ class nbaApi {
     }
   }
 
-  Future<List<Player>> getTeamPlayerInfo() async {
+  Future<List<Standings>> getTeamsStandings() async {
     try {
       Response res = await get(
-          Uri.parse('https://api-nba-v1.p.rapidapi.com/players?season=2022&team=2'),
+          Uri.parse('https://api-nba-v1.p.rapidapi.com/standings?league=standard&season=2022'),
           headers: headers);
       if (res.statusCode == 200) {
         var homeMap = json.decode(res.body)['response'] as List;
         print(json.decode(res.body));
         final homeList =
-        homeMap.map<Player>((e) => Player.fromJson(e)).toList();
+        homeMap.map<Standings>((e) => Standings.fromJson(e)).toList();
+        return homeList;
+      } else {
+        throw Exception("Failed to load data from API");
+      }
+    } catch (e) {
+      throw Exception("Failed to connect to API: $e");
+    }
+  }
+
+
+  Future<List<Player>> getTeamPlayerInfo() async {
+    try {
+      Response res = await get(
+          Uri.parse(
+              'https://api-nba-v1.p.rapidapi.com/players?season=2022&team=2'),
+          headers: headers);
+      if (res.statusCode == 200) {
+        var homeMap = json.decode(res.body)['response'] as List;
+        print(json.decode(res.body));
+        final homeList =
+            homeMap.map<Player>((e) => Player.fromJson(e)).toList();
         return homeList;
       } else {
         throw Exception("Failed to load data from API");
@@ -113,8 +131,8 @@ class Scores {
     required this.homeTeam,
     required this.visitor,
     required this.home,
-});
- factory Scores.fromJson(Map<String, dynamic> json) {
+  });
+  factory Scores.fromJson(Map<String, dynamic> json) {
     return Scores(
       visitorTeam: VisitorTeam.fromJson(json['teams']['visitors']),
       homeTeam: HomeTeam.fromJson(json['teams']['home']),
@@ -124,24 +142,195 @@ class Scores {
   }
 
   Map<String, dynamic> toJson() => {
-   'visitorTeam': visitorTeam,
-    'homeTeam': homeTeam,
-    'visitor': visitor,
-    'home': home,
-  };
-
+        'visitorTeam': visitorTeam,
+        'homeTeam': homeTeam,
+        'visitor': visitor,
+        'home': home,
+      };
 }
 
-class Home{
+class Conference {
+  String? name;
+  int? rank;
+  int? win;
+  int? loss;
+
+  Conference({
+    required this.name,
+    required this.rank,
+    required this.win,
+    required this.loss,
+  });
+
+  factory Conference.fromJson(Map<String, dynamic> json) {
+    return Conference(
+      name: json['name'],
+      rank: json['rank'],
+      win: json['win'],
+      loss: json['loss'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'rank': rank,
+        'win': win,
+        'loss': loss,
+      };
+}
+
+class Division {
+  String? name;
+  int? rank;
+  int? win;
+  int? loss;
+  String? gamesBehind;
+
+  Division({
+    required this.name,
+    required this.rank,
+    required this.win,
+    required this.loss,
+    required this.gamesBehind
+  });
+
+  factory Division.fromJson(Map<String, dynamic> json) {
+    return Division(
+      name: json['name'],
+      rank: json['rank'],
+      win: json['win'],
+      loss: json['loss'],
+      gamesBehind: json['gamesBehind'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'rank': rank,
+        'win': win,
+        'loss': loss,
+        'gamesBehind': gamesBehind,
+      };
+}
+
+class Win {
+  int? home;
+  int? away;
+  int? total;
+  String? percentage;
+  int? lastTen;
+
+  Win({
+    this.home,
+    this.away,
+    this.lastTen,
+    this.percentage,
+    this.total,
+  });
+
+  factory Win.fromJson(Map<String, dynamic> json) {
+    return Win(
+      home: json['home'],
+      away: json['away'],
+      lastTen: json['lastTen'],
+      percentage: json['percentage'],
+      total: json['total'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'home': home,
+        'loss': away,
+        'points': lastTen,
+        'percentage': percentage,
+        'total': total,
+      };
+}
+
+class Loss {
+  int? home;
+  int? away;
+  int? total;
+  String? percentage;
+  int? lastTen;
+
+  Loss({
+    this.home,
+    this.away,
+    this.lastTen,
+    this.percentage,
+    this.total,
+  });
+
+  factory Loss.fromJson(Map<String, dynamic> json) {
+    return Loss(
+      home: json['home'],
+      away: json['away'],
+      lastTen: json['lastTen'],
+      percentage: json['percentage'],
+      total: json['total'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'home': home,
+        'loss': away,
+        'points': lastTen,
+        'percentage': percentage,
+        'total': total,
+      };
+}
+
+class Standings {
+  String? league;
+  int? season;
+  EastTeam? eastTeam;
+  Conference? conference;
+  Division? division;
+  Win? win;
+  Loss? loss;
+  String? gamesBehind;
+  int? streak;
+  bool? winStreak;
+  int? tieBreakerPoints;
+
+  Standings({
+    this.league,
+    this.season,
+    this.eastTeam,
+    this.conference,
+    this.division,
+    this.win,
+    this.loss,
+    this.gamesBehind,
+    this.streak,
+    this.winStreak,
+    this.tieBreakerPoints,
+});
+
+  factory Standings.fromJson(Map<String, dynamic> json) {
+    return Standings(
+      league: json['league'],
+      season: json['season'],
+      eastTeam: EastTeam.fromJson(json['team']),
+      conference: Conference.fromJson(json['conference']),
+      division: Division.fromJson(json['division']),
+      win: Win.fromJson(json['win']),
+      loss: Loss.fromJson(json['loss']),
+      gamesBehind: json['gamesBehind'],
+      streak: json['streak'],
+      winStreak: json['winStreak'],
+      tieBreakerPoints: json['tieBreakerPoints'],
+    );
+  }
+}
+
+class Home {
   int? win;
   int? loss;
   int? points;
 
-  Home({
-    this.win,
-    this.loss,
-    this.points
-  });
+  Home({this.win, this.loss, this.points});
 
   factory Home.fromJson(Map<String, dynamic> json) {
     return Home(
@@ -151,23 +340,18 @@ class Home{
     );
   }
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'win': win,
         'loss': loss,
         'points': points,
       };
-
 }
 
 class Series {
   int? win;
   int? loss;
 
-  Series({
-    this.win,
-    this.loss
-  });
+  Series({this.win, this.loss});
 
   factory Series.fromJson(Map<String, dynamic> json) {
     return Series(
@@ -175,15 +359,13 @@ class Series {
       loss: json['loss'],
     );
   }
-    Map<String, dynamic> toJson() =>
-        {
-          'win': win,
-          'loss': loss,
-        };
-  }
+  Map<String, dynamic> toJson() => {
+        'win': win,
+        'loss': loss,
+      };
+}
 
-
-class Visitors{
+class Visitors {
   int? win;
   int? loss;
   int? points;
@@ -192,7 +374,7 @@ class Visitors{
     this.win,
     this.loss,
     this.points,
-});
+  });
 
   factory Visitors.fromJson(Map<String, dynamic> json) {
     return Visitors(
@@ -203,19 +385,15 @@ class Visitors{
   }
 
   Map<String, dynamic> toJson() => {
-    'win': win,
-    'loss': loss,
-    'points': points,
-  };
-
+        'win': win,
+        'loss': loss,
+        'points': points,
+      };
 }
-
-
-
 
 //below are east and west team for nba
 
-class WestTeam{
+class WestTeam {
   final int? id;
   final String? name;
   final String? nickname;
@@ -240,22 +418,17 @@ class WestTeam{
       code: json['code'],
       city: json['city'],
       logo: json['logo'],
-
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'name': name,
-    'nickname': nickname,
-    'code': code,
-    'city': city,
-    'logo' : logo,
-  };
-
+        'name': name,
+        'nickname': nickname,
+        'code': code,
+        'city': city,
+        'logo': logo,
+      };
 }
-
-
-
 
 class EastTeam {
   final int? id;
@@ -267,34 +440,32 @@ class EastTeam {
 
   const EastTeam({
     this.id,
-     this.name,
+    this.name,
     this.nickname,
-     this.code,
-     this.city,
+    this.code,
+    this.city,
     this.logo,
   });
-
 
   factory EastTeam.fromJson(Map<String, dynamic> json) {
     return EastTeam(
       id: json['id'],
-      name: json['name'] ,
-      nickname: json['nickname'] ,
-      code: json['code'] ,
-      city: json['city'] ,
+      name: json['name'],
+      nickname: json['nickname'],
+      code: json['code'],
+      city: json['city'],
       logo: json['logo'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'name': name,
-    'nickname': nickname,
-    'code': code,
-    'city': city,
-    'logo' : logo,
-  };
+        'name': name,
+        'nickname': nickname,
+        'code': code,
+        'city': city,
+        'logo': logo,
+      };
 }
-
 
 class VisitorTeam {
   final int? id;
@@ -313,31 +484,29 @@ class VisitorTeam {
     this.logo,
   });
 
-
   factory VisitorTeam.fromJson(Map<String, dynamic> json) {
     return VisitorTeam(
       id: json['id'],
-      name: json['name'] ,
-      nickname: json['nickname'] ,
-      code: json['code'] ,
-      city: json['city'] ,
+      name: json['name'],
+      nickname: json['nickname'],
+      code: json['code'],
+      city: json['city'],
       logo: json['logo'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'name': name,
-    'nickname': nickname,
-    'code': code,
-    'city': city,
-    'logo' : logo,
-  };
-}
-class TeamPage{
-
+        'name': name,
+        'nickname': nickname,
+        'code': code,
+        'city': city,
+        'logo': logo,
+      };
 }
 
-class Player{
+class TeamPage {}
+
+class Player {
   String? firstname;
   String? lastName;
   int? id;
@@ -348,7 +517,7 @@ class Player{
   String? college;
   String? affiliation;
 
-    Player( {
+  Player({
     this.id,
     this.firstname,
     this.lastName,
@@ -371,15 +540,11 @@ class Player{
       lastName: json['lastname'],
       college: json['college'],
       affiliation: json['affiliation'],
-
-
     );
   }
-
-
-
 }
-class Leagues{
+
+class Leagues {
   int? jersey;
   bool? active;
   String? pos;
@@ -399,14 +564,13 @@ class Leagues{
   }
 
   Map<String, dynamic> toJson() => {
-    'jersey': jersey,
-    'active': active,
-    'pos': pos,
-  };
+        'jersey': jersey,
+        'active': active,
+        'pos': pos,
+      };
+}
 
-  }
-
-class Birthday{
+class Birthday {
   String? date;
   String? country;
   Birthday({
@@ -422,21 +586,17 @@ class Birthday{
   }
 
   Map<String, dynamic> toJson() => {
-    'date': date,
-    'country': country,
-  };
+        'date': date,
+        'country': country,
+      };
 }
 
-class Height{
+class Height {
   String? feets;
   String? inches;
   String? meters;
 
-  Height({
-    this.feets,
-    this.inches,
-    this.meters
-});
+  Height({this.feets, this.inches, this.meters});
 
   factory Height.fromJson(Map<String, dynamic> json) {
     return Height(
@@ -446,15 +606,11 @@ class Height{
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'feets': feets,
-    'inches': inches,
-    'meter': meters
-  };
-
+  Map<String, dynamic> toJson() =>
+      {'feets': feets, 'inches': inches, 'meter': meters};
 }
 
-class Weight{
+class Weight {
   String? pounds;
   String? kilograms;
 
@@ -471,10 +627,9 @@ class Weight{
   }
 
   Map<String, dynamic> toJson() => {
-    'pounds': pounds,
-    'kilograms': kilograms,
-  };
-
+        'pounds': pounds,
+        'kilograms': kilograms,
+      };
 }
 
 class NBA {
@@ -494,12 +649,10 @@ class NBA {
   }
 
   Map<String, dynamic> toJson() => {
-    'start': start,
-    'pro': pro,
-  };
-
+        'start': start,
+        'pro': pro,
+      };
 }
-
 
 class HomeTeam {
   final int? id;
@@ -518,24 +671,22 @@ class HomeTeam {
     this.logo,
   });
 
-
   factory HomeTeam.fromJson(Map<String, dynamic> json) {
     return HomeTeam(
       id: json['id'],
-      name: json['name'] ,
-      nickname: json['nickname'] ,
-      code: json['code'] ,
-      city: json['city'] ,
+      name: json['name'],
+      nickname: json['nickname'],
+      code: json['code'],
+      city: json['city'],
       logo: json['logo'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'name': name,
-    'nickname': nickname,
-    'code': code,
-    'city': city,
-    'logo' : logo,
-  };
+        'name': name,
+        'nickname': nickname,
+        'code': code,
+        'city': city,
+        'logo': logo,
+      };
 }
-
