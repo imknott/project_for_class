@@ -17,6 +17,12 @@ dependencies:
   google_sign_in: ^6.0.2
   firebase_ui_oauth_google: ^1.0.22
   cloud_firestore: ^4.4.5
+  smooth_page_indicator: ^1.0.1
+  shared_preferences: ^2.0.20
+  intl: ^0.17.0
+  google_fonts: ^2.1.0
+  carousel_slider: ^4.2.1
+  dots_indicator: ^2.1.0
 
 dev_dependencies:
   flutter_test:

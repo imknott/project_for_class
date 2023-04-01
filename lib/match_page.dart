@@ -1,30 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:project_for_class/new_dash.dart';
-
-import 'api_service.dart';
 
 class Match extends StatefulWidget {
 
-  final String id;
+  final String league;
+  final String home;
+  final String away;
 
   const Match(this.id);
 
   @override
-  State<Match> createState() => _MatchState(this.id);
+  State<Match> createState() => _MatchState(league, home, away);
 
 }
 
 
 
 class _MatchState extends State<Match> {
-  late List<Scores> futureGame = [];
-  final String? id;
-  _MatchState(this.id);
-  String league = "NBA";
-  late FirebaseFirestore db;
-  late FirebaseAuth _auth;
+
+  final String league;
+  final String home;
+  final String away;
   int index = -1;
   int secondIndex = -1;
 
@@ -65,13 +62,11 @@ class _MatchState extends State<Match> {
           ),
         ],
         title: Text(
-          'NBA',
+          '$home : $away',
+          style: TextStyle(fontSize: 14),
         ),
       ),
-      body: futureGame == null || futureGame!.isEmpty
-          ? const Center(
-        child: CircularProgressIndicator(),
-      ): Column(
+      body: Column(
         children: [
           Expanded(
             child: ListView(
@@ -94,13 +89,13 @@ class _MatchState extends State<Match> {
                             children: [
                               Row(
                                 children: [
-                                  Text('Date:', textAlign: TextAlign.left,),
+                                  Text('$league', textAlign: TextAlign.left,),
                                   SizedBox(width: 10,),
-                                  Text('${futureGame[0].date?.start.toString().split('T').first}', textAlign: TextAlign.right,),
+                                  Text('Game Date', textAlign: TextAlign.right,),
                                 ],
                               ),
                               SizedBox(height: 30,),
-                              Text('${futureGame[0].homeTeam?.nickname} - ${futureGame[0].home?.points.toString()} : ${futureGame[0].visitor?.points.toString()} - ${futureGame[0].visitorTeam?.nickname}', textAlign: TextAlign.center,),
+                              Text('$home -score or date- $away', textAlign: TextAlign.center,),
                               SizedBox(height: 30,),
                             ],
                           )
@@ -122,110 +117,134 @@ class _MatchState extends State<Match> {
                               child: Text('LINEUPS'),
                               ),
                             ),
-                            Container(
-                              width: 192,
-                              child: TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    if(index==1){
-                                      index=-1;
-                                    } else{
-                                      index = 1;
-                                    }
-                                  });
-                                },
-                                child: Text('STATS'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  )
-                ),
-                if(index==0)...[
-                  Container(
-                    height: 380,
-                    width: 380,
-                    child: Card(
-                      child: Image(image: AssetImage('images/sampleFormation.png')),
-                    ),
-                  )
-                ]else if(index==1)... [
-                  Container(
-                    height: 380,
-                    width: 380,
-                    child: Card(
-                      child: Image(image: AssetImage('images/sampleStats.png')),
-                    ),
-                  )
-                ],
-                if(league=='NFL' || league=='NBA' || league=='MLB' || league == 'MLS')...[
-                  Container(
-                    height: 50,
-                    child: Card(
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 192,
-                            child: TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  if(secondIndex==0){
-                                    secondIndex=-1;
-                                  } else{
-                                    secondIndex = 0;
-                                  }
-                                });
-                              },
-                              child: Text('WEATHER'),
+                          ),
+                          Expanded(
+                            flex: 0,
+                            child: Text(
+                              snapshot.data[0].time,
+                              style: TextStyle(fontSize: 15),
                             ),
                           ),
-                          Container(
-                            width: 192,
-                            child: TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  if(secondIndex==1){
-                                    secondIndex=-1;
-                                  } else{
-                                    secondIndex = 1;
-                                  }
-                                });
-                              },
-                              child: Text('LOCATION'),
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                              child: Text(
+                                away!,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  if(secondIndex==0)...[
-                    Container(
-                      height: 150,
-                      child: Card(
-                        child: Text('Weather', textAlign: TextAlign.center,),
-                      ),
-                    )
-                  ]else if(secondIndex==1)... [
-                    Container(
-                      height: 150,
-                      child: Card(
-                        child: Column(
-                          children: [
-                            Image(image: AssetImage('images/sampleArena.jpg')),
-                            Text('Ball Arena')
-                          ],
+                      const SizedBox(height: 10,),
+                      Center(
+                        child: Text(
+                          '00 - 00',
+                          style: TextStyle(fontSize: 40),
                         ),
                       ),
-                    )
-                  ],
-                ]
+                      const SizedBox(height: 10,),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10,),
+                Card(
+                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 15,),
+                      //game date
+                      const Text('Who will win?', textAlign: TextAlign.right,),
+                      const SizedBox(height: 30,),
+                      //team names and score/game time
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 160,
+                            height: 100,
+                            child: GestureDetector(
+                              onTap: (){},
+                              child: Card(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      home!,
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                    SizedBox(height: 10,),
+                                    Text(
+                                      snapshot.data[0].homeOdds,
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 15,),
+                          SizedBox(
+                            width: 160,
+                            height: 100,
+                            child: GestureDetector(
+                              onTap: (){},
+                              child: Card(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      away!,
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                    SizedBox(height: 10,),
+                                    Text(
+                                      snapshot.data[0].awayOdds,
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10,),
+                    ],
+                  ),
+                ),
               ],
-            ),
-          ),
-        ],
-      )
+            );
+          } else if (snapshot.hasError) { //checks if the response throws an error
+            return Text("${snapshot.error}");
+          }
+          return CircularProgressIndicator();
+        },
+      ),
     );
   }
 }
+
+Future<List<Odds>?> fetchOdds() async {
+  var headers = {
+    'x-rapidapi-key': '1bb8997ee5e91a27b5b22bacc064405a',
+    'x-rapidapi-host': 'v1.basketball.api-sports.io'
+  };
+  try {
+    Response response = await get(
+      //to change
+      Uri.parse('https://v1.basketball.api-sports.io/odds?season=2022-2023&bet=2&league=12'),
+      headers: headers
+    );
+    if (response.statusCode == 200) {
+      var decodedResponse = jsonDecode(response.body)['response'];
+      final oddsList = decodedResponse.map<Odds>((e) => Odds.fromJson(e)).toList();
+      return oddsList;
+    }
+  } catch (e) {
+    throw Exception("Failed to connect to API: $e");
+  }
+  return null;
+}
+
+
