@@ -8,10 +8,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:project_for_class/dashboard.dart';
 import 'package:project_for_class/league_selection.dart';
+import 'package:project_for_class/new_dash.dart';
 import 'package:project_for_class/onboarding_page.dart';
 import 'package:project_for_class/register_page.dart';
 import 'package:project_for_class/sign_in.dart';
+import 'package:project_for_class/user_page.dart';
 
+import 'package:project_for_class/test_data_retrieval.dart';
 import 'firebase_options.dart';
 
 //
@@ -37,6 +40,9 @@ class MyApp extends StatelessWidget {
         //  '/forgot-password': (context) {
         //this will be created soon
         // },
+        '/test': (context){
+          return const Home();
+        },
         '/register': (context) {
           return RegisterScreen();
         },
@@ -44,10 +50,10 @@ class MyApp extends StatelessWidget {
           return const OnboardingScreen();
         },
         '/dash': (context) {
-          return const Dashboard();
+          return MyDashPage();
         },
-        '/settings': (context) {
-          return SettingsScreen();
+        '/user': (context) {
+          return UserPage();
         },
       },
     );

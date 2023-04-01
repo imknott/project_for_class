@@ -18,7 +18,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late List<Player>? _teamModel = [];
+  late List<Standings>? _teamModel = [];
   final String title = "East Teams";
 
 
@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
   }
 
   void _getData() async {
-    _teamModel = (await nbaApi().getTeamPlayerInfo());
+    _teamModel = (await nbaApi().getTeamsStandings());
 
 
 
@@ -57,8 +57,12 @@ class _HomeState extends State<Home> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text("${_teamModel![index].firstname?.toString()}"),
-                        Text("${_teamModel![index].lastName?.toString()}"),
+                        TextButton(onPressed: () => {
+
+                        },child: Text("${_teamModel![index].eastTeam?.name.toString()}")),
+                        Image.network("${_teamModel![index].eastTeam?.logo.toString()}",width: 50,),
+                        Text("Wins${_teamModel![index].win?.total.toString()}"),
+                        Text("Loss${_teamModel![index].loss?.total.toString()}"),
                       ],
                     ),
                     const SizedBox(
@@ -68,8 +72,8 @@ class _HomeState extends State<Home> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         //Image.network(_teamModel![index].logo.toString(),width: 50,height: 50,),
-                        Text("${_teamModel![index].height?.feets.toString()}"),
-                        Text("${_teamModel![index].height?.inches.toString()}"),
+                        //Text("${_teamModel![index].height?.feets.toString()}"),
+                       // Text("${_teamModel![index].height?.inches.toString()}"),
                       ],
                     ),
                   ],
