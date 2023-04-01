@@ -1,14 +1,16 @@
+import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:project_for_class/sign_in.dart';
 import 'package:project_for_class/user_page.dart';
-import 'league_tables/basketball_league_table.dart';
-import 'league_tables/mlb_league_table.dart';
-import 'league_tables/mls_league_table.dart';
-import 'league_tables/nba_league_table.dart';
-import 'league_tables/nfl_league_table.dart';
-import 'league_tables/soccer_league_table.dart';
+import 'api_service.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'dart:convert';
+import 'package:http/http.dart';
+import 'odds_api.dart';
+
 
 class Dashboard extends StatefulWidget {
   @override
@@ -16,245 +18,291 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  final controller = ScrollController();
+  bool authenticated = false;
+  int currentIndex = 0;
+  bool ready = false;
   final List<String> leagues = ['NBA', "NFL", "MLB", "MLS"];
   List<String> unfollowedLeagues = [];
   List<String> leagueLogo = ['images/Logo-NBA.png','images/nflLogo.png','images/mlbLogo.png','images/mlsCrestLogo.png'];
+
+  var user = FirebaseAuth.instance.currentUser?.email;
+  late List<Scores>? _gameModel = [];
+  late Future<List<Odds>?> _odds;
+
+  // This controller will store the value of the search bar
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _getData();
+    _getOdds();
+    ready = true;
+    if (FirebaseAuth.instance.currentUser != null) {
+      authenticated = true;
+    }
+  }
+
+  void _getData() async {
+    _gameModel = (await nbaApi().getTodayGames());
+
+    // Simulate QUERY time for the real API call
+    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
+  }
+
+  void _getOdds() async {
+    _odds = fetchOdds();
+
+    // Simulate QUERY time for the real API call
+    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
+  }
+
   _DashboardState();
 
   @override
   Widget build(BuildContext context) {
-    if (FirebaseAuth.instance.currentUser != null) {
-      return Scaffold(backgroundColor: Colors.blueGrey,
-        appBar: AppBar(
-          backgroundColor: Colors.amber,
-          centerTitle: true,
-          title: Text('Dashboard'),
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.account_circle),
-              onPressed: () {
-                //if already login
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const UserPage()));
-                //else direct to login/register page.
-              },
-            ),
-          ],
-        ),
-        body: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
+    return Scaffold(backgroundColor: Colors.blueGrey,
+      appBar: AppBar(
+        backgroundColor: Colors.amber,
+        centerTitle: true,
+        title: Text('Dashboard'),
+        actions: <Widget>[
+          authenticated ? IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const UserPage()));
+            },
+          ) : TextButton(
+            child: const Text('Sign in',style: TextStyle(color: Colors.blueGrey),),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) =>  LoginScreen()));
+            },
           ),
-          itemCount: leagues.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              child: Card(
-                color: Colors.white,
-                //child: Image(image: AssetImage('images/trophy.png')),
-                child: Column(
-                  children: [
-                    Image.asset(leagueLogo[index], height: 70,),
-                    Text(leagues[index]),
-                  ],
-                ),
-              ),
-              onTap: () {
-                if (leagues[index].contains("MLS")) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              MLSLeagueTable(leagues[index])));
-                } else if (leagues[index].contains("NBA")) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              NBALeagueTable(leagues[index])));
-                } else if (leagues[index].contains("MLB")) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              MLBLeagueTable(leagues[index])));
-                } else {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              NFLLeagueTable(leagues[index])));
-                }
-                ;
-              },
-              onDoubleTap: () {
-                setState(() {
-                  unfollowedLeagues.add(leagues[index]);
-                  leagues.remove(leagues[index]);
-                });
-              },
-            );
-          },
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FloatingActionButton(backgroundColor: Colors.amber, foregroundColor: Colors.blueGrey,
-          onPressed: () {
-            showModalBottomSheet<void>(
-              context: context,
-              builder: (BuildContext context) {
-                return Container(
-                  height: 250,
-                  child: ListView.builder(
-                    itemCount: unfollowedLeagues.length,
-                    prototypeItem: ListTile(
-                      title: Text(unfollowedLeagues.first),
-                    ),
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                          child: Card(
-                            child: SizedBox(
-                              width: 100,
-                              height: 100,
-                              child:
-                              Center(child: Text(unfollowedLeagues[index])),
-                            ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              leagues.add(unfollowedLeagues[index]);
-                              unfollowedLeagues.remove(
-                                  unfollowedLeagues[index]);
-                              Navigator.pop(context);
-                            });
-                          });
-                    },
+        ],
+      ),
+      body: _gameModel!.isNotEmpty ?
+        Column(
+          children: [
+            SizedBox(height: 10,),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                child: Text(
+                  'MATCHES TODAY',
+                  style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 30,
+                    fontFamily: GoogleFonts.bebasNeue().fontFamily,
                   ),
-                );
-              },
-            );
-          },
-          child: Icon(Icons.add),
-        ),
-      );
-    }else{
-      return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text('Dashboard'),
-          backgroundColor: Colors.amber,
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Sign in',style: TextStyle(color: Colors.blueGrey),),
-              onPressed: () {
-                //if already login
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  LoginScreen()));
-                //else direct to login/register page.
-              },
-            ),
-          ],
-        ),
-        backgroundColor: Colors.blueGrey,
-        body: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-          ),
-          itemCount: leagues.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              child: Card(
-                color: Colors.white,
-                //child: Image(image: AssetImage('images/trophy.png')),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(leagueLogo[index],height: 70,),
-                    Text(leagues[index]),
-                  ],
                 ),
+              )
+            ),
+            CarouselSlider(
+              options: CarouselOptions(
+                autoPlay: true,
+                aspectRatio: 2.0,
+                enlargeCenterPage: true,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                },
               ),
-              onTap: () {
-                if (leagues[index].contains("MLS")) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              MLSLeagueTable(leagues[index])));
-                } else if (leagues[index].contains("NBA")) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              NBALeagueTable(leagues[index])));
-                } else if (leagues[index].contains("MLB")) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              MLBLeagueTable(leagues[index])));
-                } else {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              NFLLeagueTable(leagues[index])));
-                }
-                ;
-              },
-              onDoubleTap: () {
-                setState(() {
-                  unfollowedLeagues.add(leagues[index]);
-                  leagues.remove(leagues[index]);
-                });
-              },
-            );
-          },
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.amber,
-          foregroundColor: Colors.blueGrey,
-          onPressed: () {
-            if (unfollowedLeagues.isNotEmpty) {
-              showModalBottomSheet<void>(
-                context: context,
-                builder: (BuildContext context) {
-                  return Container(
-                    height: 250,
-                    child: ListView.builder(
-                      itemCount: unfollowedLeagues.length,
-                      prototypeItem: ListTile(
-                        title: Text(unfollowedLeagues.first),
-                      ),
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                            child: Card(
-                              child: SizedBox(
-                                width: 100,
-                                height: 100,
-                                child:
-                                Center(child: Text(unfollowedLeagues[index])),
+              items: _gameModel!
+                  .map((item) => GestureDetector(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    elevation: 5,
+                    //margin: EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  TextButton(
+                                    onPressed: () => {},
+                                    child: Text(
+                                      "${item.homeTeam?.name.toString()}",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                    ),
+                                  ),
+                                  Image.network(
+                                    "${item.homeTeam?.logo.toString()}",
+                                    width: 70,
+                                    height: 50,
+                                  ),
+                                ]
                               ),
                             ),
-                            onTap: () {
-                              setState(() {
-                                leagues.add(unfollowedLeagues[index]);
-                                unfollowedLeagues.remove(
-                                    unfollowedLeagues[index]);
-                                Navigator.pop(context);
-                              });
-                            });
-                      },
+                            const Text("-"),
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  TextButton(
+                                    onPressed: () => {},
+                                    child: Text(
+                                      "${item.visitorTeam?.name.toString()}",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                    )
+                                  ),
+                                  Image.network(
+                                    "${item.visitorTeam?.logo.toString()}",
+                                    width: 70,
+                                    height: 50,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Center(
+                                child: Text(
+                                  "${item.home?.points}",
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1, child: Text(""),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Center(
+                                child: Text(
+                                  "${item.visitor?.points}",
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]
+                        ),
+                      ],
                     ),
-                  );
-                },
-              );
-            } else {
+                  ),
+                  onTap: () {
 
-            }
-          },
-          child: Icon(Icons.add),
-        ),
+                  },
+                )
+              ).toList(),
+            ),
+            DotsIndicator(
+              dotsCount: _gameModel!.length,
+              position: currentIndex.toDouble(),
+            ),
+            Card(
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 15,),
+                  //game date
+                  const Text('Who will win?', textAlign: TextAlign.right,),
+                  const SizedBox(height: 30,),
+                  //team names and score/game time
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 160,
+                        height: 100,
+                        child: GestureDetector(
+                          onTap: (){},
+                          child: Card(
+                            child: Column(
+                              children: [
+                                Text(
+                                  "${_gameModel?[0].homeTeam?.name}",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                SizedBox(height: 10,),
+                                Text(
+                                  "-", // need to fix_odds.,_odds[0].homeOdds,
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 15,),
+                      SizedBox(
+                        width: 160,
+                        height: 100,
+                        child: GestureDetector(
+                          onTap: (){},
+                          child: Card(
+                            child: Column(
+                              children: [
+                                Text(
+                                  "${_gameModel?[0].visitorTeam?.name}",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                SizedBox(height: 10,),
+                                Text(
+                                  "-", // need to fix_odds.,
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10,),
+                ],
+              ),
+            ),
+          ]
+      ) : const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Future<List<Odds>?> fetchOdds() async {
+    var headers = {
+      'x-rapidapi-key': '1bb8997ee5e91a27b5b22bacc064405a',
+      'x-rapidapi-host': 'v1.basketball.api-sports.io'
+    };
+    try {
+      Response response = await get(
+        //to change
+          Uri.parse('https://v1.basketball.api-sports.io/odds?season=2022-2023&bet=2&league=12'),
+          headers: headers
       );
+      if (response.statusCode == 200) {
+        var decodedResponse = jsonDecode(response.body)['response'];
+        final oddsList = decodedResponse.map<Odds>((e) => Odds.fromJson(e)).toList();
+        return oddsList;
+      }
+    } catch (e) {
+      throw Exception("Failed to connect to API: $e");
     }
+    return null;
   }
 }
