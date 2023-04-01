@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:project_for_class/user_page.dart';
+import 'package:project_for_class/fireStore_service.dart';
+import 'package:project_for_class/match_page.dart';
 
 import 'api_service.dart';
 
@@ -12,8 +15,13 @@ class MyDashPage extends StatefulWidget {
 }
 
 class _MyDashPageState extends State<MyDashPage> {
-  var user = FirebaseAuth.instance.currentUser?.email;
   late List<Scores>? _gameModel = [];
+  late FirebaseAuth _auth;
+  late FirebaseFirestore db;
+  late var user;
+  late var userInfo;
+  late var docSnap;
+
 
   // This controller will store the value of the search bar
   final TextEditingController _searchController = TextEditingController();
@@ -21,8 +29,27 @@ class _MyDashPageState extends State<MyDashPage> {
   @override
   void initState() {
     super.initState();
+    db = FirebaseFirestore.instance;
+    _auth = FirebaseAuth.instance;
+    user = _auth.currentUser?.email;
     _getData();
+    _getFirestoreData();
   }
+
+  void _getFirestoreData() async {
+    final ref = db.collection("users").doc("${_auth.currentUser?.uid}").withConverter(
+      fromFirestore: UserFS.fromFirestore,
+      toFirestore: (UserFS userInfo, _) => userInfo.toFirestore(),
+    );
+    docSnap = await ref.get();
+    userInfo = docSnap.data(); // Convert to City object
+    if (userInfo != null) {
+      print(userInfo);
+    } else {
+      print("No such document.");
+    }
+  }
+
 
   void _getData() async {
     _gameModel = (await nbaApi().getTodayGames());
@@ -55,6 +82,13 @@ class _MyDashPageState extends State<MyDashPage> {
                 child: CircularProgressIndicator(),
               )
             : Column(children: [
+              Container(
+
+                child: Row(children: [
+                  Text('Your total predicted wins ${userInfo.gamesPredictedCorrect} / ${userInfo.totalPredictions}'),
+                  Text('Total predicted losses ${userInfo.gamesPredictedIncorrect} / ${userInfo.totalPredictions}'),
+                ],),
+              ),
                 Align(
                     alignment: Alignment.topLeft,
                     child: Text(
@@ -79,7 +113,12 @@ class _MyDashPageState extends State<MyDashPage> {
                               ),
                               elevation: 5,
                               margin: EdgeInsets.all(10),
-                              child: Row(
+                              child: InkWell(
+                                onTap: () {
+
+                                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Match(_gameModel![index].id.toString())));
+                                },
+                                child: Row(
                                 children: [
                                   Column(children: [
                                     TextButton(
@@ -110,6 +149,7 @@ class _MyDashPageState extends State<MyDashPage> {
                                     ],
                                   ),
                                 ],
+                              ),
                               ),
                             );
                           }),

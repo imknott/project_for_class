@@ -62,7 +62,7 @@ class _SoccerLeagueTableState extends State<SoccerLeagueTable> {
               DataCell(Text('63')),
             ],
             onSelectChanged: (newValue) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Team1', leagueName)));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Team1')));
             },
           ),
           DataRow(
@@ -79,7 +79,7 @@ class _SoccerLeagueTableState extends State<SoccerLeagueTable> {
               DataCell(Text('58')),
             ],
             onSelectChanged: (newValue) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Team2', leagueName)));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Team2')));
             },
           ),
         ],

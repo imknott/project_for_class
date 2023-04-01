@@ -1,38 +1,77 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:project_for_class/new_dash.dart';
+
+import 'api_service.dart';
 
 class Match extends StatefulWidget {
 
-  final String league;
-  final String home;
-  final String away;
+  final String id;
 
-  Match(this.league, this.home, this.away);
+  const Match(this.id);
 
   @override
-  State<Match> createState() => _MatchState(league, home, away);
+  State<Match> createState() => _MatchState(this.id);
 
 }
 
-class _MatchState extends State<Match> {
 
-  final String league;
-  final String home;
-  final String away;
+
+class _MatchState extends State<Match> {
+  late List<Scores> futureGame = [];
+  final String? id;
+  _MatchState(this.id);
+  String league = "NBA";
+  late FirebaseFirestore db;
+  late FirebaseAuth _auth;
   int index = -1;
   int secondIndex = -1;
 
-  _MatchState(this.league, this.home, this.away);
+
+  @override
+  void initState() {
+    super.initState();
+    db = FirebaseFirestore.instance;
+    _auth = FirebaseAuth.instance;
+    _getData();
+  }
+
+  void _getData() async {
+    futureGame = (await nbaApi().getGameInfo(id!));
+
+    // Simulate QUERY time for the real API call
+    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.back_hand),
+            onPressed: () {
+              //if already login
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyDashPage()));
+              //else direct to login/register page.
+            },
+          ),
+        ],
         title: Text(
-          '$home : $away',
-          style: TextStyle(fontSize: 14),
+          'NBA',
         ),
       ),
-      body: Column(
+      body: futureGame == null || futureGame!.isEmpty
+          ? const Center(
+        child: CircularProgressIndicator(),
+      ): Column(
         children: [
           Expanded(
             child: ListView(
@@ -55,13 +94,13 @@ class _MatchState extends State<Match> {
                             children: [
                               Row(
                                 children: [
-                                  Text('$league', textAlign: TextAlign.left,),
+                                  Text('Date:', textAlign: TextAlign.left,),
                                   SizedBox(width: 10,),
-                                  Text('Game Date', textAlign: TextAlign.right,),
+                                  Text('${futureGame[0].date?.start.toString().split('T').first}', textAlign: TextAlign.right,),
                                 ],
                               ),
                               SizedBox(height: 30,),
-                              Text('$home -score or date- $away', textAlign: TextAlign.center,),
+                              Text('${futureGame[0].homeTeam?.nickname} - ${futureGame[0].home?.points.toString()} : ${futureGame[0].visitor?.points.toString()} - ${futureGame[0].visitorTeam?.nickname}', textAlign: TextAlign.center,),
                               SizedBox(height: 30,),
                             ],
                           )

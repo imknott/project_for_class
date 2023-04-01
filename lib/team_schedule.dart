@@ -8,18 +8,16 @@ List<String> awayTeams = [
 
 class TeamSchedule extends StatefulWidget {
 
-  final String leagueName;
   final String teamName;
-  TeamSchedule(this.teamName, this.leagueName);
+  TeamSchedule(this.teamName);
 
   @override
-  State<TeamSchedule> createState() => _TeamScheduleState(teamName, leagueName);
+  State<TeamSchedule> createState() => _TeamScheduleState(teamName);
 }
 
 class _TeamScheduleState extends State<TeamSchedule> {
   final String teamName;
-  final String leagueName;
-  _TeamScheduleState(this.teamName, this.leagueName);
+  _TeamScheduleState(this.teamName);
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +60,7 @@ class _TeamScheduleState extends State<TeamSchedule> {
               ),
             ),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Match(leagueName, teamName, awayTeams[index])));
+              //Navigator.push(context, MaterialPageRoute(builder: (context) => Match( teamName, awayTeams[index])));
             },
           );
         },

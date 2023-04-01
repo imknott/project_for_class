@@ -106,7 +106,7 @@ class _NBALeagueTableState extends State<NBALeagueTable> {
                     DataCell(Text('L2')),
                   ],
                   onSelectChanged: (newValue) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Nuggets', leagueName)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Nuggets')));
                   },
                 ),
                 DataRow(
@@ -126,7 +126,7 @@ class _NBALeagueTableState extends State<NBALeagueTable> {
                     DataCell(Text('W3')),
                   ],
                   onSelectChanged: (newValue) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Kings', leagueName)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Kings')));
                   },
                 ),
               ],
@@ -164,7 +164,7 @@ class _NBALeagueTableState extends State<NBALeagueTable> {
                     DataCell(Text('L1')),
                   ],
                   onSelectChanged: (newValue) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Bucks', leagueName)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Bucks')));
                   },
                 ),
                 DataRow(
@@ -184,7 +184,7 @@ class _NBALeagueTableState extends State<NBALeagueTable> {
                     DataCell(Text('W2')),
                   ],
                   onSelectChanged: (newValue) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Celtics', leagueName)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule('Celtics')));
                   },
                 ),
               ],

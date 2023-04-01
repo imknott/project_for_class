@@ -63,7 +63,7 @@ class _ScheduleState extends State<Schedule> {
               ),
             ),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Match(leagueName, homeTeams[index], awayTeams[index])));
+
             },
           );
         },
