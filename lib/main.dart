@@ -8,13 +8,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:project_for_class/add_friend.dart';
 import 'package:project_for_class/dashboard.dart';
-import 'package:project_for_class/new_dash.dart';
 import 'package:project_for_class/onboarding_page.dart';
 import 'package:project_for_class/register_page.dart';
 import 'package:project_for_class/sign_in.dart';
 import 'package:project_for_class/user_page.dart';
 
-import 'package:project_for_class/test_data_retrieval.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'firebase_options.dart';
@@ -142,6 +140,7 @@ class _OnboardingState extends State<Onboarding> {
       child: Center(
         child: Text(
           'Track your favorite teams and bet on which team will win.',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20,
           ),
@@ -160,6 +159,7 @@ class _OnboardingState extends State<Onboarding> {
               alignment: Alignment.centerRight,
               child: Text(
                 'Predict the results well enough and you could find yourself ranked #1',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
                 ),
@@ -176,10 +176,10 @@ class _OnboardingState extends State<Onboarding> {
         child: Center(
       child: Text(
         'Create an account today',
+        textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 20,
         ),
-        textAlign: TextAlign.center,
       ),
     ));
   }
@@ -194,12 +194,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/sign-in': (context) {
           return LoginScreen();
-        },
-        //  '/forgot-password': (context) {
-        //this will be created soon
-        // },
-        '/test': (context) {
-          return const Home();
         },
         '/addFriend': (context) {
           return CloudFirestoreSearch();

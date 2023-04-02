@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'api_service.dart';
+import 'api_service/api_service.dart';
 
 class TeamSchedule extends StatefulWidget {
   final String id;

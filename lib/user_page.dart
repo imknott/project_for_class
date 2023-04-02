@@ -23,26 +23,6 @@ class _UserPageState extends State<UserPage> {
     _passwordController = TextEditingController();
   }
 
-  // void toggleSwitch(bool value) {
-  //
-  //   if(isSwitched == false)
-  //   {
-  //     setState(() {
-  //       isSwitched = true;
-  //       textValue = 'Switch Button is ON';
-  //     });
-  //     print('Switch Button is ON');
-  //   }
-  //   else
-  //   {
-  //     setState(() {
-  //       isSwitched = false;
-  //       textValue = 'Switch Button is OFF';
-  //     });
-  //     print('Switch Button is OFF');
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,29 +68,6 @@ class _UserPageState extends State<UserPage> {
                       ),
                     ),
                   ),
-                  //SizedBox(height: 10,),
-                  // Align(
-                  //   alignment: Alignment.centerLeft,
-                  //   child: Row(
-                  //     children: [
-                  //       const Text(
-                  //         "Notifications",
-                  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  //       ),
-                  //       Transform.scale(
-                  //         scale: 1,
-                  //         child: Switch(
-                  //           onChanged: toggleSwitch,
-                  //           value: isSwitched,
-                  //           activeColor: Colors.blue,
-                  //           activeTrackColor: Colors.yellow,
-                  //           inactiveThumbColor: Colors.redAccent,
-                  //           inactiveTrackColor: Colors.orange,
-                  //         )
-                  //       ),
-                  //     ]
-                  //   ),
-                  // ),
                   SizedBox(
                     height: 30,
                   ), TextButton(
@@ -145,18 +102,15 @@ class _UserPageState extends State<UserPage> {
                       onPressed: () {
                         final snackBar = SnackBar(
                           content: const Text(
-                            'Can\'t do that right now',
+                            'Reset?',
                           ),
                           action: SnackBarAction(
                             label: 'Okay',
                             onPressed: () {
-                              // Some code to undo the change.
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OnboardingScreen()));
                             },
                           ),
                         );
-
-                        // Find the ScaffoldMessenger in the widget tree
-                        // and use it to show a SnackBar.
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       },
                       child: Text('Reset'),
@@ -181,7 +135,6 @@ class _UserPageState extends State<UserPage> {
               padding: EdgeInsets.fromLTRB(20, 10, 300, 0),
               child: Column(
                 children: [
-
                   TextButton(
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.black12
@@ -220,6 +173,7 @@ class _UserPageState extends State<UserPage> {
                           label: 'Yes',
                           onPressed: () {
                             FirebaseAuth.instance.currentUser?.delete();
+                            Navigator.pushNamed(context, '/onboard');
                             // Some code to undo the change.
                           },
                         ),

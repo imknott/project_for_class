@@ -10,13 +10,12 @@ import 'package:project_for_class/sign_in.dart';
 import 'package:project_for_class/team_schedule.dart';
 import 'package:project_for_class/user_page.dart';
 import 'package:project_for_class/user_rankings.dart';
-import 'api_service.dart';
+import 'api_service/api_service.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
-import 'match_id_api.dart';
-import 'odds_api.dart';
-
+import 'api_service/match_id_api.dart';
+import 'api_service/odds_api.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -24,10 +23,8 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-
   final controller = ScrollController();
   int currentIndex = 0;
-  double _currentSliderValue = 20;
 
   bool authenticated = false;
   bool displayBets = false;
@@ -38,22 +35,22 @@ class _DashboardState extends State<Dashboard> {
   String currentHome = "";
   String currentVisitor = "";
 
-  //final List<String> leagues = ['NBA', "NFL", "MLB", "MLS"];
-  //List<String> unfollowedLeagues = [];
-  //List<String> leagueLogo = ['images/Logo-NBA.png','images/nflLogo.png','images/mlbLogo.png','images/mlsCrestLogo.png'];
-
-  //late List<int> playedOrScheduled = [];
   late List<Scores>? _gameModel = [];
   late Future<List<Standings>?> _standings;
   late List<List<Odds>?>? _odds;
   late List<Standings>? awaitedStandings = [];
   List<MatchId>? _matchIds = [];
   late FirebaseFirestore db;
-
   var user = FirebaseAuth.instance.currentUser?.email;
 
-  // This controller will store the value of the search bar
-  final TextEditingController _searchController = TextEditingController();
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _rank = db
+      .collection('Standings')
+      .orderBy("guessedRightPercentage", descending: true)
+      .snapshots();
+
+  // late Stream<QuerySnapshot<Map<String, dynamic>>> _rank = db.collection("users").snapshots();
+  //     // .orderBy("guessedRightPercentage", descending: true)
+  //     // .snapshots();
 
   @override
   void initState() {
@@ -88,7 +85,8 @@ class _DashboardState extends State<Dashboard> {
   void _getStandings() async {
     _standings = nbaApi().getTeamsStandings();
     awaitedStandings = await _standings;
-    (await _standings)?.sort((a, b) => a.conference!.rank!.compareTo(b.conference!.rank!));
+    (await _standings)
+        ?.sort((a, b) => a.conference!.rank!.compareTo(b.conference!.rank!));
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
 
@@ -103,38 +101,43 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.blueGrey,
+    return Scaffold(
+      backgroundColor: Colors.blueGrey,
       appBar: AppBar(
         backgroundColor: Colors.amber,
         centerTitle: true,
-        title: const Text('Dashboard'),
+        title: Text('Dashboard'),
         actions: <Widget>[
-          authenticated ? IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const UserPage()));
-            },
-          ) : TextButton(
-            child: const Text('Sign in',style: TextStyle(color: Colors.blueGrey),),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) =>  LoginScreen()));
-            },
-          ),
+          authenticated
+              ? IconButton(
+                  icon: const Icon(Icons.account_circle),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const UserPage()));
+                  },
+                )
+              : TextButton(
+                  child: const Text(
+                    'Sign in',
+                    style: TextStyle(color: Colors.blueGrey),
+                  ),
+                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                  },
+                ),
         ],
       ),
       body: _gameModel!.isNotEmpty ?
         Column(
           children: [
-            const SizedBox(height: 10,),
+            const SizedBox(
+              height: 10,
+            ),
             Align(
               alignment: Alignment.center,
               child: Text(
                 'UPCOMING MATCHES',
                 style: TextStyle(
-                    color: Colors.amber,
-                    fontSize: 30,
+                  color: Colors.amber,
+                  fontSize: 30,
                   fontFamily: GoogleFonts.bebasNeue().fontFamily,
                 ),
               ),
@@ -150,95 +153,90 @@ class _DashboardState extends State<Dashboard> {
                   });
                 },
               ),
-              items: _gameModel!
-                  .map((item) => GestureDetector(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    elevation: 5,
-                    //margin: EdgeInsets.all(10),
-                    child: Column(
-                      children: [
+              items: _gameModel!.map((item) => GestureDetector(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  elevation: 5,
+                  //margin: EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                TextButton(
+                                  onPressed: () => {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule("${item.homeTeam?.name.toString()}", "${item.homeTeam?.id.toString()}"))),
+                                  },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                  ),
+                                  child: Text(
+                                    "${item.homeTeam?.name.toString()}",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}")),
+                                    );
+                                  },
+                                  child: Image.network(
+                                    "${item.homeTeam?.logo.toString()}",
+                                    width: 70,
+                                    height: 50,
+                                  ),
+                                ),
+                              ]
+                            ),
+                          ),
+                          const Text("-"),
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                TextButton(
+                                  onPressed: () => {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => TeamSchedule("${item.visitorTeam?.name.toString()}", "${item.visitorTeam?.id.toString()}"))),
+                                  },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                  ),
+                                  child: Text(
+                                    "${item.visitorTeam?.name.toString()}",
+                                    textAlign: TextAlign.center,
+                                  )
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.visitorTeam?.name.toString()}","${item.visitorTeam?.id.toString()}")),
+                                    );
+                                  },
+                                  child: Image.network(
+                                    "${item.visitorTeam?.logo.toString()}",
+                                    width: 70,
+                                    height: 50,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      item.home?.points == null ?
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}")),
-                                      );
-                                    },
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.black,
-                                    ),
-                                    child: Text(
-                                      "${item.homeTeam?.name.toString()}",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}")),
-                                      );
-                                    },
-                                    child: Image.network(
-                                      "${item.homeTeam?.logo.toString()}",
-                                      width: 70,
-                                      height: 50,
-                                    ),
-                                  ),
-                                ]
-                              ),
-                            ),
-                            const Text("-"),
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.visitorTeam?.name.toString()}","${item.visitorTeam?.id.toString()}")),
-                                      );
-                                    },
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.black,
-                                    ),
-                                    child: Text(
-                                      "${item.visitorTeam?.name.toString()}",
-                                      textAlign: TextAlign.center,
-                                    )
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.visitorTeam?.name.toString()}","${item.visitorTeam?.id.toString()}")),
-                                      );
-                                    },
-                                    child: Image.network(
-                                      "${item.visitorTeam?.logo.toString()}",
-                                      width: 70,
-                                      height: 50,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        //if games havent been played yet
-                        item.home?.points == null ?
-                        Row (
                           children: [
                             const Expanded(
-                              flex: 0, child: Text(""),
+                              flex: 0,
+                              child: Text(""),
                             ),
                             Expanded(
                               flex: 1,
@@ -264,88 +262,87 @@ class _DashboardState extends State<Dashboard> {
                               ),
                             ),
                             const Expanded(
-                              flex: 0, child: Text(""),
+                              flex: 0,
+                              child: Text(""),
                             ),
                           ]
-                        ): Row(
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: Center(
-                                child: Text(
-                                  "${item.home?.points}",
-                                  style: const TextStyle(
-                                    fontSize: 30,
+                        ) : Row(
+                              children: [
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text(
+                                      "${item.home?.points}",
+                                      style: const TextStyle(
+                                        fontSize: 30,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const Expanded(
-                              flex: 0, child: Text(""),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Center(
-                                child: Text(
-                                  "${item.visitor?.points}",
-                                  style: const TextStyle(
-                                    fontSize: 30,
+                                const Expanded(
+                                  flex: 0,
+                                  child: Text(""),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Center(
+                                    child: Text(
+                                      "${item.visitor?.points}",
+                                      style: const TextStyle(
+                                        fontSize: 30,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ]
-                        ),
-                      ],
-                    ),
+                              ]
+                          ),
+                    ],
                   ),
-                  onTap: () {
-                    setState(() {
-                      displayBets = !displayBets;
-                    });
-                  },
-                )
-              ).toList(),
+                ),
+                onTap: () {
+                  setState(() {
+                    displayBets = !displayBets;
+                  });
+                },
+              )).toList(),
             ),
             DotsIndicator(
               dotsCount: _gameModel!.length,
               position: currentIndex.toDouble(),
             ),
-            if(!betsReady && displayBets)...[
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
+            if (!betsReady && displayBets) ...[
+              const Card(
                 margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: SizedBox(
                   height: 170,
                   width: 350,
                   child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 5),
-                        Text("Fetching odds.."),
-                      ],
-                    ),
-                    ),
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
               ),
-            ] else if(displayBets && !selectedBet)...[
+            ] else if (displayBets && !selectedBet) ...[
               GestureDetector(
                 child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
                   margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                   child: Column(
                     children: [
-                      const SizedBox(height: 15,),
+                      const SizedBox(
+                        height: 15,
+                      ),
                       //game date
-                      _odds?[currentIndex]![0].status == "NS" ? const Text('Who will win?', textAlign: TextAlign.right,)
-                          : const Text('Odds were', textAlign: TextAlign.right,),
-                      const SizedBox(height: 30,),
+                      _odds?[currentIndex]![0].status == "NS"
+                          ? const Text(
+                              'Who will win?',
+                              textAlign: TextAlign.right,
+                            )
+                          : const Text(
+                              'Odds were',
+                              textAlign: TextAlign.right,
+                            ),
+                      const SizedBox(
+                        height: 30,
+                      ),
                       //team names and score/game time
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -354,155 +351,163 @@ class _DashboardState extends State<Dashboard> {
                             width: 160,
                             height: 100,
                             child: GestureDetector(
-                              onTap: (){
-                                _odds?[currentIndex]![0].status == "NS" ?
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return StatefulBuilder(
-                                        builder: (BuildContext context, void Function(void Function()) setState) {
-                                          return AlertDialog(
-                                            title: Text("Bet on ${_gameModel?[currentIndex].homeTeam?.nickname}"),
-                                            content: SizedBox(
-                                              height: 100,
-                                              child: Column(
-                                                children: [
-                                                  Text("${_odds?[currentIndex]![0].homeOdds}"),
-                                                  Slider(
-                                                    value: _currentSliderValue,
-                                                    max: 100,
-                                                    divisions: 100,
-                                                    label: _currentSliderValue.round().toString(),
-                                                    onChanged: (double value) {
-                                                      setState(() {
-                                                        _currentSliderValue = value;
-                                                      });
-                                                    },
-                                                  ),
-                                                  Text("Betting ${_odds?[currentIndex]![0].homeOdds} * ${_currentSliderValue}"),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                  setState(() {
-                                                    //set user bet
-                                                  });
-                                                },
-                                                child: Text("Cancel"),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                  setState(() {
-                                                    //set user bet
-                                                  });
-                                                },
-                                                child: Text("Done"),
-                                              ),
-                                            ],
-                                          );
-                                        }
-                                    );
-                                  },
-                                ) : null;
+                              onTap: () {
+                                  //change when user can make bet
+                                if(_odds?[currentIndex]![0].status == "NS"){
+                                  final userGameMap = <String, dynamic>{
+                                    "gameId":
+                                    _gameModel?[currentIndex].gameId,
+                                    "teamName": _gameModel?[currentIndex]
+                                        .homeTeam
+                                        ?.name,
+                                    "isFinished": false,
+                                  };
+                                  var userRef = db.collection("users")
+                                      .doc(
+                                      FirebaseAuth
+                                          .instance.currentUser?.uid);
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("Bet on ${_gameModel?[currentIndex].homeTeam?.nickname}"),
+                                        content: SizedBox(
+                                          height: 20,
+                                          child:
+                                            Text("Chance ${_odds?[currentIndex]![0].homeOdds}"),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () async {
+                                              Navigator.pop(context);
+                                                await db
+                                                    .collection("predictedgames")
+                                                    .doc(FirebaseAuth
+                                                    .instance.currentUser?.uid)
+                                                    .set(userGameMap)
+                                                    .onError((e, _) => print(
+                                                    "Error writing document: $e"));
+                                                _gameModel?.removeAt(currentIndex);
+                                            },
+                                            child: Text("Bet"),
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                  );
+                                } else {
+                                  null;
+                                }
                               },
                               child: Card(
                                 color: Colors.white70,
                                 child: Column(
                                   children: [
-                                    const SizedBox(height:10,),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
                                     Text(
                                       "${_gameModel?[currentIndex].homeTeam?.nickname}",
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 20),
+                                      style:
+                                          const TextStyle(fontSize: 20),
                                     ),
-                                    const SizedBox(height: 10,),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
                                     Text(
-                                      "${_odds?[currentIndex]![0].homeOdds}",
-                                      style: const TextStyle(fontSize: 18),
+                                      "${_odds?[currentIndex]![0].homeOdds}", // need to fix_odds.,_odds[0].homeOdds,
+                                      style:
+                                          const TextStyle(fontSize: 18),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 15,),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           SizedBox(
                             width: 160,
                             height: 100,
                             child: GestureDetector(
-                              onTap: (){
-                                _odds?[currentIndex]![0].status == "NS" ?
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return StatefulBuilder(
-                                      builder: (BuildContext context, void Function(void Function()) setState) {
+                              onTap: () {
+                                if(_odds?[currentIndex]![0].status == "NS") {
+                                  final userGameMap = <String, dynamic>{
+                                    "gameId": _gameModel?[currentIndex].gameId,
+                                    "teamName": _gameModel?[currentIndex].visitorTeam?.name,
+                                    "isFinished": false,
+                                  };
+                                  var userRef = db.collection("users")
+                                      .doc(
+                                      FirebaseAuth
+                                          .instance.currentUser?.uid);
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
                                         return AlertDialog(
                                           title: Text("Bet on ${_gameModel?[currentIndex].visitorTeam?.nickname}"),
                                           content: SizedBox(
-                                            height: 100,
-                                            child: Column(
-                                              children: [
-                                                Text("${_odds?[currentIndex]![0].awayOdds}"),
-                                                Slider(
-                                                  value: _currentSliderValue,
-                                                  max: 100,
-                                                  divisions: 100,
-                                                  label: _currentSliderValue.round().toString(),
-                                                  onChanged: (double value) {
-                                                    setState(() {
-                                                      _currentSliderValue = value;
-                                                    });
-                                                  },
-                                                ),
-                                                Text("Betting ${_odds?[currentIndex]![0].awayOdds} * ${_currentSliderValue}"),
-                                              ],
-                                            ),
+                                            height: 20,
+                                            child:
+                                            Text("Chance ${_odds?[currentIndex]![0].awayOdds}"),
                                           ),
                                           actions: [
                                             TextButton(
                                               onPressed: () {
                                                 Navigator.pop(context);
-                                                setState(() {
-                                                  //set user bet
-                                                });
                                               },
                                               child: Text("Cancel"),
                                             ),
                                             TextButton(
-                                              onPressed: () {
+                                              onPressed: () async {
                                                 Navigator.pop(context);
-                                                setState(() {
-                                                  //set user bet
-                                                });
+                                                await db
+                                                    .collection("predictedgames")
+                                                    .doc(FirebaseAuth
+                                                    .instance.currentUser?.uid)
+                                                    .set(userGameMap)
+                                                    .onError((e, _) => print(
+                                                    "Error writing document: $e"));
+                                                _gameModel?.removeAt(currentIndex);
                                               },
-                                              child: Text("Done"),
+                                              child: Text("Bet"),
                                             ),
                                           ],
                                         );
                                       }
-                                    );
-                                  },
-                                ) : null;
+                                  );
+                                } else {
+                                  null;
+                                }
                               },
                               child: Card(
                                 color: Colors.white70,
                                 child: Column(
                                   children: [
-                                    const SizedBox(height:10,),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
                                     Text(
                                       "${_gameModel?[currentIndex].visitorTeam?.nickname}",
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 20),
+                                      style:
+                                          const TextStyle(fontSize: 20),
                                     ),
-                                    const SizedBox(height: 10,),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
                                     Text(
                                       "${_odds?[currentIndex]![0].awayOdds}", // need to fix_odds.,
-                                      style: const TextStyle(fontSize: 18),
+                                      style:
+                                          const TextStyle(fontSize: 18),
                                     ),
                                   ],
                                 ),
@@ -511,65 +516,18 @@ class _DashboardState extends State<Dashboard> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10,),
+                      const SizedBox(
+                        height: 10,
+                      ),
                     ],
                   ),
                 ),
-                onTap: () {
-                }
-              ),
+                onTap: () {}),
             ],
-            // ] else if(selectedBet && displayBets)...[
-            //   GestureDetector(
-            //       child: Card(
-            //         margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            //         child: Column(
-            //           children: [
-            //             const SizedBox(height: 15,),
-            //             //game date
-            //             const Text('You bet on', textAlign: TextAlign.right,),
-            //             const SizedBox(height: 30,),
-            //             //team names and score/game time
-            //             Row(
-            //               mainAxisAlignment: MainAxisAlignment.center,
-            //               children: [
-            //                 SizedBox(
-            //                   width: 160,
-            //                   height: 100,
-            //                   child: GestureDetector(
-            //                     onTap: (){},
-            //                     child: Card(
-            //                       child: Column(
-            //                         children: [
-            //                           Text(
-            //                             "name of team here",
-            //                             textAlign: TextAlign.center,
-            //                             style: TextStyle(fontSize: 20),
-            //                           ),
-            //                           SizedBox(height: 10,),
-            //                           Text(
-            //                             "-", // need to fix_odds.,_odds[0].homeOdds,
-            //                             style: TextStyle(fontSize: 18),
-            //                           ),
-            //                         ],
-            //                       ),
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ],
-            //             ),
-            //             const SizedBox(height: 10,),
-            //           ],
-            //         ),
-            //       ),
-            //       onTap: () {
-            //       }
-            //   ),
-            // ],
             const SizedBox(height: 10),
             Container(
               height: 20,
-              margin: const EdgeInsets.fromLTRB(10, 0,10,0),
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               child: Text(
                 "Rankings",
                 style: TextStyle(
@@ -579,15 +537,18 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ),
             ),
-            if(userRankings)...[
+            if (userRankings) ...[
               GestureDetector(
-                onHorizontalDragEnd: (DragEndDetails details){
-                  setState (() {
+                onHorizontalDragEnd: (DragEndDetails details) {
+                  setState(() {
                     userRankings = false;
                   });
                 },
                 onTap: () {
-                  Navigator.push((context), MaterialPageRoute(builder: (context) => UserRankings()));
+                  Navigator.push(
+                      (context),
+                      MaterialPageRoute(
+                          builder: (context) => UserRankings()));
                 },
                 child: SizedBox(
                   height: displayBets ? 220 : 380,
@@ -596,48 +557,28 @@ class _DashboardState extends State<Dashboard> {
                     color: Colors.amber,
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                      child: FutureBuilder(
-                          future: _standings,
+                      child: StreamBuilder<QuerySnapshot>(
+                          stream: _rank,
                           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                            if (snapshot.hasData) { //checks if the response returns valid data
+                            if (snapshot.hasData) {
                               return ListView.builder(
-                                  itemCount: snapshot.data.length,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      margin: EdgeInsets.fromLTRB(10, 0, 10,0),
-                                      color: Colors.amber,
-                                      child: Card(
-                                        child: ListTile(
-                                          leading: Text('ranking'),
-                                          title: Text('user name'),
-                                          subtitle: Text("win - lose percentage"),
-                                          trailing: Text("total creds"),
-                                        ),
+                                itemCount: snapshot.data?.docs.length,
+                                itemBuilder: (context, index) {
+                                  DocumentSnapshot data =
+                                      snapshot.data?.docs[index]
+                                          as DocumentSnapshot<Object?>;
+                                  return Container(
+                                    margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                    color: Colors.amber,
+                                    child: Card(
+                                      child: ListTile(
+                                        leading: Text('${index + 1}'),
+                                        title: Text('${data['email']}'),
+                                        trailing: Text( "win % - ${data['guessedRightPercentage']}"),
                                       ),
-                                      // // Column(
-                                      // //   children: [
-                                      // //     // Row(
-                                      // //     //   children: [
-                                      // //     //     Expanded(
-                                      // //     //       flex: 1,
-                                      // //     //       child: Text(snapshot.data[index].conference.rank.toString()),
-                                      // //     //     ),
-                                      // //     //     SizedBox(width: 10,),
-                                      // //     //     Expanded(
-                                      // //     //       flex: 2,
-                                      // //     //       child: Text(snapshot.data[index].eastTeam.name.toString())
-                                      // //     //     ),
-                                      // //     //     SizedBox(width: 10,),
-                                      // //     //     Expanded(
-                                      // //     //       flex: 1,
-                                      // //     //       child: Text("${snapshot.data[index].win.total.toString()} - ${snapshot.data[index].loss.total.toString()}"),
-                                      // //     //     ),
-                                      // //     //   ],
-                                      // //     // ),
-                                      // //   ],
-                                      // ),
-                                    );
-                                  }
+                                    ),
+                                  );
+                                }
                               );
                             }
                             return const Center(
@@ -649,10 +590,10 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ),
               ),
-            ] else...[
+            ] else ...[
               GestureDetector(
-                onHorizontalDragEnd: (DragEndDetails details){
-                  setState (() {
+                onHorizontalDragEnd: (DragEndDetails details) {
+                  setState(() {
                     userRankings = true;
                   });
                 },
@@ -664,68 +605,48 @@ class _DashboardState extends State<Dashboard> {
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
                       child: FutureBuilder(
-                        future: _standings,
-                        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                          if (snapshot.hasData) { //checks if the response returns valid data
-                            return ListView.builder(
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                return Container(
-                                  margin: EdgeInsets.fromLTRB(10, 0, 10,0),
-                                  color: Colors.amberAccent,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push((context), MaterialPageRoute(builder: (context) => TeamSchedule(snapshot.data[index].eastTeam.name.toString(), snapshot.data[index].eastTeam.id.toString())));
-                                    },
-                                    child: Card(
-                                      child: ListTile(
-                                        leading: Text(snapshot.data[index].conference.rank.toString()),
-                                        title: Text(snapshot.data[index].eastTeam.name.toString()),
-                                        subtitle: Text("${snapshot.data[index].win.total.toString()} - ${snapshot.data[index].loss.total.toString()}"),
-                                        trailing: Text(snapshot.data[index].conference.name.toString().toUpperCase()),
+                          future: _standings,
+                          builder: (BuildContext context,
+                              AsyncSnapshot<dynamic> snapshot) {
+                            if (snapshot.hasData) {
+                              return ListView.builder(
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (context, index) {
+                                  return Container(
+                                    margin:
+                                        EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                    color: Colors.amberAccent,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push((context), MaterialPageRoute(builder: (context) => TeamSchedule(snapshot.data[index].eastTeam.name.toString(), snapshot.data[index].eastTeam.id.toString())));
+                                      },
+                                      child: Card(
+                                        child: ListTile(
+                                          leading: Text(snapshot.data[index].conference.rank.toString()),
+                                          title: Text(snapshot.data[index].eastTeam.name.toString()),
+                                          subtitle: Text("${snapshot.data[index].win.total.toString()} - ${snapshot.data[index].loss.total.toString()}"),
+                                          trailing: Text(snapshot.data[index].conference.name.toString().toUpperCase()),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                    // // Column(
-                                    // //   children: [
-                                    // //     // Row(
-                                    // //     //   children: [
-                                    // //     //     Expanded(
-                                    // //     //       flex: 1,
-                                    // //     //       child: Text(snapshot.data[index].conference.rank.toString()),
-                                    // //     //     ),
-                                    // //     //     SizedBox(width: 10,),
-                                    // //     //     Expanded(
-                                    // //     //       flex: 2,
-                                    // //     //       child: Text(snapshot.data[index].eastTeam.name.toString())
-                                    // //     //     ),
-                                    // //     //     SizedBox(width: 10,),
-                                    // //     //     Expanded(
-                                    // //     //       flex: 1,
-                                    // //     //       child: Text("${snapshot.data[index].win.total.toString()} - ${snapshot.data[index].loss.total.toString()}"),
-                                    // //     //     ),
-                                    // //     //   ],
-                                    // //     // ),
-                                    // //   ],
-                                    // ),
-                                );
-                              }
+                                  );
+                                }
+                              );
+                            }
+                            return const Center(
+                              child: CircularProgressIndicator(),
                             );
-                          }
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                      ),
+                          }),
                     ),
                   ),
                 ),
               )
             ]
           ],
-      ) : const Center(
-        child: CircularProgressIndicator(),
-      ),
+        )
+      : const Center(
+          child: CircularProgressIndicator(),
+        ),
     );
   }
 
@@ -736,15 +657,16 @@ class _DashboardState extends State<Dashboard> {
     };
     try {
       List<List<Odds>?> allOdds = [];
-      for(int i=0; i < _matchIds!.length; i++){
+      for (int i = 0; i < _matchIds!.length; i++) {
         Response response = await get(
-          //to change
-            Uri.parse('https://v1.basketball.api-sports.io/odds?league=12&season=2022-2023&game=${_matchIds![i].gameId}'),
-            headers: headers
-        );
+            //to change
+            Uri.parse(
+                'https://v1.basketball.api-sports.io/odds?league=12&season=2022-2023&game=${_matchIds![i].gameId}'),
+            headers: headers);
         if (response.statusCode == 200) {
           var decodedResponse = jsonDecode(response.body)['response'];
-          final oddsList = decodedResponse.map<Odds>((e) => Odds.fromJson(e)).toList();
+          final oddsList =
+              decodedResponse.map<Odds>((e) => Odds.fromJson(e)).toList();
           allOdds.add(oddsList);
         }
       }
@@ -762,13 +684,14 @@ class _DashboardState extends State<Dashboard> {
     try {
       String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       Response response = await get(
-        //to change
-          Uri.parse('https://v1.basketball.api-sports.io/games?league=12&season=2022-2023&date=$date'),
-          headers: headers
-      );
+          //to change
+          Uri.parse(
+              'https://v1.basketball.api-sports.io/games?league=12&season=2022-2023&date=$date'),
+          headers: headers);
       if (response.statusCode == 200) {
         var decodedResponse = jsonDecode(response.body)['response'];
-        final matchIdList = decodedResponse.map<MatchId>((e) => MatchId.fromJson(e)).toList();
+        final matchIdList =
+            decodedResponse.map<MatchId>((e) => MatchId.fromJson(e)).toList();
         return matchIdList;
       }
     } catch (e) {

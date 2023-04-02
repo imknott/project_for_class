@@ -7,11 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:project_for_class/sign_in.dart';
 import 'package:project_for_class/team_schedule.dart';
 import 'package:project_for_class/user_page.dart';
-import 'api_service.dart';
+import 'api_service/api_service.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
-import 'odds_api.dart';
+import 'api_service/odds_api.dart';
 import 'package:project_for_class/fireStore_service.dart';
 
 
@@ -75,25 +75,36 @@ class _CloudFirestoreSearchState extends State<CloudFirestoreSearch> {
                   children: <Widget>[
                     TextButton(
                       onPressed: (){
-                        final snackBar = SnackBar(
-                          content: const Text(
-                            "Add as a friend",
-                          ),
-                          action: SnackBarAction(
-                            label: 'Yes',
-                            onPressed: () async {
-                              final friendMap = <String, dynamic>{
-                                "friendEmail": data['email'],
-                              };
-                              await db.collection("friends").doc(user.currentUser?.uid).set(friendMap).onError((e, _) => print("Error writing document: $e"));
-                              // Some code to undo the change.
-                            },
-                          ),
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                              builder: (BuildContext context, void Function(void Function()) setState) {
+                                return AlertDialog(
+                                  title: Text("Add as a friend"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text("No"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        final friendMap = <String, dynamic>{
+                                          "friendEmail": data['email'],
+                                        };
+                                        await db.collection("friends").doc(user.currentUser?.uid).set(friendMap).onError((e, _) => print("Error writing document: $e"));
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text("Yes"),
+                                    ),
+                                  ],
+                                );
+                              }
+                            );
+                          },
                         );
-
-                        // Find the ScaffoldMessenger in the widget tree
-                        // and use it to show a SnackBar.
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       },
                       child: Text(data['email'],
                       style: TextStyle(

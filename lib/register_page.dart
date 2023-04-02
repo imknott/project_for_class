@@ -31,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset : false,
       backgroundColor: Colors.blueGrey,
       appBar: AppBar(title: Text('Sport Tracking'),backgroundColor: Colors.amber,),
       body: Center(
@@ -44,7 +45,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Create Account to track your favorite teams, leagues and players.',textAlign: TextAlign.center,style: TextStyle(fontStyle: FontStyle.normal, fontSize: 20, color: Colors.amber),),
+              Text('Create Account to track your favorite teams, leagues and players.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontStyle: FontStyle.normal, fontSize: 20, color: Colors.amber),
+              ),
               Image.asset('images/flame-success.png'),
               TextField(
                 onChanged: (value) {
@@ -54,7 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
-                  hintText: 'email',
+                  hintText: 'Email',
                 ),
               ),
               TextField(
@@ -66,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
-                  hintText: 'password',
+                  hintText: 'Password',
                 ),
               ),
               TextField(
@@ -80,10 +84,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
-                  hintText: 'confirm password',
+                  hintText: 'Confirm Password',
                 ),
               ),
-              TextButton(
+              SizedBox(height: 5,),
+              SizedBox(
+                height: 40,
+                width: 80,
+                child: TextButton(
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.black,
                     backgroundColor: Colors.amber,
@@ -91,7 +99,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     padding: EdgeInsets.all(2),
                     textStyle: const TextStyle(fontSize: 20),
                   ),
-                  child: const Text('create account'),
+                  child: const Text(
+                      'Signup',
+                    style: TextStyle(fontSize: 20),
+                  ),
                   onPressed: () async {
                     //print("create account with $email , $password");
                     try {
@@ -105,12 +116,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         "gamesPredictedIncorrect": 0,
                         "isMember": false,
                         "totalPredictions": 0,
+                        "search"
+                        "totalBetPoints": 2000,
                       };
 
                       final standingMap = <String, dynamic>{
-                        "uid": newUser.user?.uid,
+                        "email": newUser.user?.email,
                         "totalGuessedPercentage": 0.00,
-                        "standing": 1,
                       };
 
                       if(_auth.currentUser != null){
@@ -125,7 +137,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     } catch (e) {
                       print(e);
                     }
-                  }), TextButton(
+                  }
+                ),
+              ),
+              SizedBox(height: 5,),
+              SizedBox(
+                height: 40,
+                width: 80,
+                child: TextButton(
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.black,
                     backgroundColor: Colors.blueAccent,
@@ -137,7 +156,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () {
                     //print("create account with $email , $password");
                     Navigator.pushNamed(context, '/sign-in');
-                  }),
+                  }
+                ),
+              ),
             ],
           ),
         ),

@@ -48,25 +48,32 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextField(
-                onChanged: (value) {
-                  email = value;
-                },
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(),
-                  hintText: 'email',
+              SizedBox(
+                width: 400,
+                child: TextField(
+                  onChanged: (value) {
+                    email = value;
+                  },
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(),
+                    hintText: 'Email',
+                  ),
                 ),
               ),
-              TextField(
-                onChanged: (value) {
-                  password = value;
-                },
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'password',
+              SizedBox(
+                width: 400,
+                child: TextField(
+                  onChanged: (value) {
+                    password = value;
+                  },
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(),
+                    hintText: 'Password',
+                  ),
                 ),
               ),
               TextButton(

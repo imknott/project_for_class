@@ -112,9 +112,9 @@ class PredictedTeam {
         gameId: data?['gameId'],
         bet: data?['bet'],
         homeScore: data?['homeScore'],
-      homeTeam: data?['homeTeam'],
-      teamPredictedToWin: data?['teamPredictedToWin'],
-      vistorTeam: data?['visitorTeam'],
+        homeTeam: data?['homeTeam'],
+        teamPredictedToWin: data?['teamPredictedToWin'],
+        vistorTeam: data?['visitorTeam'],
     );
   }
 
