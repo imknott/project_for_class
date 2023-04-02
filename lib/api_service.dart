@@ -77,7 +77,7 @@ class nbaApi {
   }
 
   Future<List<Scores>> getTodayGames() async {
-    DateTime timeToday = DateTime(2023, 04, 01);
+    DateTime timeToday = DateTime.now();
     String timeStr = "${timeToday.year}-0${timeToday.month}-0${timeToday.day}";
     print(timeStr);
     try {
@@ -89,6 +89,25 @@ class nbaApi {
         print(json.decode(res.body));
         final homeList =
             homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
+        return homeList;
+      } else {
+        throw Exception("Failed to load data from API");
+      }
+    } catch (e) {
+      throw Exception("Failed to connect to API: $e");
+    }
+  }
+
+  Future<List<Scores>> getTeamsGames(String id) async {
+    try {
+      Response res = await get(
+          Uri.parse('https://api-nba-v1.p.rapidapi.com/games?season=2022&team=$id'),
+          headers: headers);
+      if (res.statusCode == 200) {
+        var homeMap = json.decode(res.body)['response'] as List;
+        print(json.decode(res.body));
+        final homeList =
+        homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
         return homeList;
       } else {
         throw Exception("Failed to load data from API");

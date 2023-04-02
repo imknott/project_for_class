@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:project_for_class/sign_in.dart';
+import 'package:project_for_class/team_schedule.dart';
 import 'package:project_for_class/user_page.dart';
 import 'api_service.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -18,6 +20,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+
   final controller = ScrollController();
   bool authenticated = false;
   int currentIndex = 0;
@@ -25,7 +28,7 @@ class _DashboardState extends State<Dashboard> {
   final List<String> leagues = ['NBA', "NFL", "MLB", "MLS"];
   List<String> unfollowedLeagues = [];
   List<String> leagueLogo = ['images/Logo-NBA.png','images/nflLogo.png','images/mlbLogo.png','images/mlsCrestLogo.png'];
-
+  late FirebaseFirestore db;
   var user = FirebaseAuth.instance.currentUser?.email;
   late List<Scores>? _gameModel = [];
   late Future<List<Odds>?> _odds;
@@ -39,6 +42,7 @@ class _DashboardState extends State<Dashboard> {
     _getData();
     _getOdds();
     ready = true;
+    db = FirebaseFirestore.instance;
     if (FirebaseAuth.instance.currentUser != null) {
       authenticated = true;
     }
@@ -130,7 +134,10 @@ class _DashboardState extends State<Dashboard> {
                               child: Column(
                                 children: [
                                   TextButton(
-                                    onPressed: () => {},
+                                    onPressed: () => {
+                                      Navigator.push(context, 
+                                    MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}"))),
+                                    },
                                     child: Text(
                                       "${item.homeTeam?.name.toString()}",
                                       textAlign: TextAlign.center,
@@ -235,7 +242,7 @@ class _DashboardState extends State<Dashboard> {
                             child: Column(
                               children: [
                                 Text(
-                                  "${_gameModel?[0].homeTeam?.name}",
+                                  "${_gameModel?[currentIndex].homeTeam?.name}",
                                   style: TextStyle(fontSize: 20),
                                 ),
                                 SizedBox(height: 10,),
@@ -258,7 +265,7 @@ class _DashboardState extends State<Dashboard> {
                             child: Column(
                               children: [
                                 Text(
-                                  "${_gameModel?[0].visitorTeam?.name}",
+                                  "${_gameModel?[currentIndex].visitorTeam?.name}",
                                   style: TextStyle(fontSize: 20),
                                 ),
                                 SizedBox(height: 10,),
@@ -274,11 +281,12 @@ class _DashboardState extends State<Dashboard> {
                     ],
                   ),
                   const SizedBox(height: 10,),
-                ],
-              ),
-            ),
+
           ]
-      ) : const Center(
+        ),
+            ),
+   ] )
+        : const Center(
         child: CircularProgressIndicator(),
       ),
     );

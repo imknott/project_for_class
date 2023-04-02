@@ -83,6 +83,7 @@ class StandingsTable {
 class PredictedTeam {
   final double? awayScore;
   final int? gameId;
+  final bool? isFinished;
   final double? homeScore;
   final String? homeTeam;
   final String? teamPredictedToWin;
@@ -91,6 +92,7 @@ class PredictedTeam {
   PredictedTeam({
     this.awayScore,
     this.gameId,
+    this.isFinished,
     this.homeScore,
     this.homeTeam,
     this.teamPredictedToWin,
@@ -104,6 +106,7 @@ class PredictedTeam {
     final data = snapshot.data();
     return PredictedTeam(
         awayScore: data?['awayScore'],
+        isFinished: data?['finished'],
         gameId: data?['gameId'],
         homeScore: data?['homeScore'],
       homeTeam: data?['homeTeam'],
@@ -115,6 +118,7 @@ class PredictedTeam {
   Map<String, dynamic> toFirestore() {
     return {
       if(awayScore != null) "awayScore": awayScore,
+      if(isFinished != null) "finished": isFinished,
       if(gameId != null) "awayScore": gameId,
       if(homeScore != null) "homeScore": homeScore,
       if(homeTeam != null) "homeTeam": homeTeam,

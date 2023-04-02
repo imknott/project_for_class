@@ -1,120 +1,99 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:project_for_class/odds_api.dart';
+import 'package:http/http.dart';
+
+import 'api_service.dart';
+import 'new_dash.dart';
+
+import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart';
+import 'odds_api.dart';
 
 class Match extends StatefulWidget {
 
-  final String league;
-  final String home;
-  final String away;
+  final String? league;
+  final String? home;
+  final String? away;
+  final String id;
 
-  const Match(this.id);
+  Match(this.league, this.home, this.away, this.id);
 
   @override
-  State<Match> createState() => _MatchState(league, home, away);
+  State<Match> createState() => _MatchState(league, home, away, id);
 
 }
 
-
-
 class _MatchState extends State<Match> {
 
-  final String league;
-  final String home;
-  final String away;
-  int index = -1;
-  int secondIndex = -1;
-
+  final String? league;
+  final String? home;
+  final String? away;
+  final String id;
+  bool ready = false;
+  late Future<List<Odds>?> _odds;
 
   @override
   void initState() {
     super.initState();
-    db = FirebaseFirestore.instance;
-    _auth = FirebaseAuth.instance;
     _getData();
+    ready = true;
   }
 
   void _getData() async {
-    futureGame = (await nbaApi().getGameInfo(id!));
+    _odds = fetchOdds();
 
     // Simulate QUERY time for the real API call
     Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
   }
 
-
-
-
+  _MatchState(this.league, this.home, this.away, this.id);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.back_hand),
-            onPressed: () {
-              //if already login
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const MyDashPage()));
-              //else direct to login/register page.
-            },
-          ),
-        ],
         title: Text(
-          '$home : $away',
+          '$league -   $home : $away',
           style: TextStyle(fontSize: 14),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
+      body: FutureBuilder(
+        future: _odds,
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (snapshot.hasData) { //checks if the response returns valid data
+            return ListView(
               children: [
-                SizedBox(height: 20,),
-                Container(
-                  width: 300,
-                  height: 150,
-                  child: Card(
-                    //padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(width: 1.5, color: Colors.grey),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Text('$league', textAlign: TextAlign.left,),
-                                  SizedBox(width: 10,),
-                                  Text('Game Date', textAlign: TextAlign.right,),
-                                ],
-                              ),
-                              SizedBox(height: 30,),
-                              Text('$home -score or date- $away', textAlign: TextAlign.center,),
-                              SizedBox(height: 30,),
-                            ],
-                          )
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              width: 192,
-                              child: TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    if(index==0){
-                                      index=-1;
-                                    } else{
-                                      index = 0;
-                                    }
-                                  });
-                                },
-                              child: Text('LINEUPS'),
+                const SizedBox(height: 20,),
+                Card(
+                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 10,),
+                      //game date
+                      Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          Text(snapshot.data[0].date, textAlign: TextAlign.right,),
+                        ],
+                      ),
+                      const SizedBox(height: 30,),
+                      //team names and score/game time
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                              child: Text(
+                                home!,
+                                textAlign: TextAlign.left,
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -233,8 +212,8 @@ Future<List<Odds>?> fetchOdds() async {
   try {
     Response response = await get(
       //to change
-      Uri.parse('https://v1.basketball.api-sports.io/odds?season=2022-2023&bet=2&league=12'),
-      headers: headers
+        Uri.parse('https://v1.basketball.api-sports.io/odds?season=2022-2023&bet=2&league=12'),
+        headers: headers
     );
     if (response.statusCode == 200) {
       var decodedResponse = jsonDecode(response.body)['response'];
@@ -246,5 +225,3 @@ Future<List<Odds>?> fetchOdds() async {
   }
   return null;
 }
-
-
