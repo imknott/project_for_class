@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:project_for_class/add_friend.dart';
 import 'package:project_for_class/dashboard.dart';
-import 'package:project_for_class/league_selection.dart';
 import 'package:project_for_class/new_dash.dart';
 import 'package:project_for_class/onboarding_page.dart';
 import 'package:project_for_class/register_page.dart';
@@ -41,7 +40,6 @@ class Onboarding extends StatefulWidget {
 }
 
 class _OnboardingState extends State<Onboarding> {
-
   final controller = PageController();
   bool isLastPage = false;
 
@@ -55,15 +53,17 @@ class _OnboardingState extends State<Onboarding> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text("Sports Tracking app"),backgroundColor: Colors.amber,),
+        appBar: AppBar(
+          title: Text("Sports Tracking app"),
+          backgroundColor: Colors.amber,
+        ),
         body: PageView(
           controller: controller,
           onPageChanged: (index) {
-            setState((){
-              if(index == 2){
+            setState(() {
+              if (index == 2) {
                 isLastPage = true;
-              }
-              else {
+              } else {
                 isLastPage = false;
               }
             });
@@ -74,116 +74,112 @@ class _OnboardingState extends State<Onboarding> {
             pageThree(),
           ],
         ),
-        bottomSheet: isLastPage ?
-        TextButton(
-          style: TextButton.styleFrom(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5)
-            ),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.amber,
-            minimumSize: const Size.fromHeight(80),
-          ),
-          onPressed: () async {
-            final prefs = await SharedPreferences.getInstance();
-            prefs.setBool('ranOnboarding', true);
-            runApp(MyApp());
-            //Navigator.pushReplacement((context), MaterialPageRoute(builder: (context) => MyApp()));
-          },
-          child: const Text(
-            'Get Started',
-            style: TextStyle(fontSize: 24),
-          ),
-        ) : Container(
-          color: Colors.amber,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          height:80,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                child: const Text('SKIP'),
-                onPressed: () {
-                  controller.jumpToPage(2);
+        bottomSheet: isLastPage
+            ? TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)),
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.amber,
+                  minimumSize: const Size.fromHeight(80),
+                ),
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  prefs.setBool('ranOnboarding', true);
+                  runApp(MyApp());
+                  //Navigator.pushReplacement((context), MaterialPageRoute(builder: (context) => MyApp()));
                 },
-              ),
-              Center(
-                child: SmoothPageIndicator(
-                  controller: controller,
-                  count: 3,
-                  effect: const WormEffect(
-                    spacing: 16,
-                    dotColor: Colors.black,
-                    activeDotColor: Colors.white,
-                  ),
-                  onDotClicked: (index) => controller.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn
-                  ),
+                child: const Text(
+                  'Get Started',
+                  style: TextStyle(fontSize: 24),
+                ),
+              )
+            : Container(
+                color: Colors.amber,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 80,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      child: const Text('SKIP'),
+                      onPressed: () {
+                        controller.jumpToPage(2);
+                      },
+                    ),
+                    Center(
+                      child: SmoothPageIndicator(
+                        controller: controller,
+                        count: 3,
+                        effect: const WormEffect(
+                          spacing: 16,
+                          dotColor: Colors.black,
+                          activeDotColor: Colors.white,
+                        ),
+                        onDotClicked: (index) => controller.animateToPage(index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeIn),
+                      ),
+                    ),
+                    TextButton(
+                      child: const Text('NEXT'),
+                      onPressed: () {
+                        controller.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    )
+                  ],
                 ),
               ),
-              TextButton(
-                child: const Text('NEXT'),
-                onPressed: () {
-                  controller.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-              )
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  Widget pageOne(){
+  Widget pageOne() {
     return Container(
         child: Center(
-          child: Text(
-          'Track your favorite teams and bet on which team will win.',
-            style: TextStyle(
-              fontSize: 20,
-            ),
-          ),
-        )
-    );
+      child: Text(
+        'Track your favorite teams and bet on which team will win.',
+        style: TextStyle(
+          fontSize: 20,
+        ),
+      ),
+    ));
   }
 
   Widget pageTwo() {
     return Container(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Align(alignment: Alignment.centerRight,
-             child: Text(
-                'Predict the results well enough and you could find yourself ranked #1',
-                style: TextStyle(
-                  fontSize: 20,
-                ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'Predict the results well enough and you could find yourself ranked #1',
+              style: TextStyle(
+                fontSize: 20,
               ),
-              ),
-            ],
+            ),
           ),
-        )
-    );
+        ],
+      ),
+    ));
   }
 
-  Widget pageThree(){
+  Widget pageThree() {
     return Container(
         child: Center(
-          child: Text(
-            'Create an account today',
-            style: TextStyle(
-              fontSize: 20,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        )
-    );
+      child: Text(
+        'Create an account today',
+        style: TextStyle(
+          fontSize: 20,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    ));
   }
 }
 
@@ -200,10 +196,10 @@ class MyApp extends StatelessWidget {
         //  '/forgot-password': (context) {
         //this will be created soon
         // },
-        '/test': (context){
+        '/test': (context) {
           return const Home();
         },
-        '/addFriend': (context){
+        '/addFriend': (context) {
           return CloudFirestoreSearch();
         },
         '/register': (context) {
