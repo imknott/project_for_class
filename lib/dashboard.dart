@@ -27,6 +27,7 @@ class _DashboardState extends State<Dashboard> {
 
   final controller = ScrollController();
   int currentIndex = 0;
+  double _currentSliderValue = 20;
 
   bool authenticated = false;
   bool displayBets = false;
@@ -167,9 +168,10 @@ class _DashboardState extends State<Dashboard> {
                               child: Column(
                                 children: [
                                   TextButton(
-                                    onPressed: () => {
+                                    onPressed: () {
                                       Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}"))),
+                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}")),
+                                      );
                                     },
                                     style: TextButton.styleFrom(
                                       foregroundColor: Colors.black,
@@ -179,10 +181,17 @@ class _DashboardState extends State<Dashboard> {
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
-                                  Image.network(
-                                    "${item.homeTeam?.logo.toString()}",
-                                    width: 70,
-                                    height: 50,
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}")),
+                                      );
+                                    },
+                                    child: Image.network(
+                                      "${item.homeTeam?.logo.toString()}",
+                                      width: 70,
+                                      height: 50,
+                                    ),
                                   ),
                                 ]
                               ),
@@ -193,7 +202,11 @@ class _DashboardState extends State<Dashboard> {
                               child: Column(
                                 children: [
                                   TextButton(
-                                    onPressed: () => {},
+                                    onPressed: () {
+                                      Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.visitorTeam?.name.toString()}","${item.visitorTeam?.id.toString()}")),
+                                      );
+                                    },
                                     style: TextButton.styleFrom(
                                       foregroundColor: Colors.black,
                                     ),
@@ -202,10 +215,17 @@ class _DashboardState extends State<Dashboard> {
                                       textAlign: TextAlign.center,
                                     )
                                   ),
-                                  Image.network(
-                                    "${item.visitorTeam?.logo.toString()}",
-                                    width: 70,
-                                    height: 50,
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.visitorTeam?.name.toString()}","${item.visitorTeam?.id.toString()}")),
+                                      );
+                                    },
+                                    child: Image.network(
+                                      "${item.visitorTeam?.logo.toString()}",
+                                      width: 70,
+                                      height: 50,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -292,19 +312,32 @@ class _DashboardState extends State<Dashboard> {
               position: currentIndex.toDouble(),
             ),
             if(!betsReady && displayBets)...[
-              const Card(
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
                 margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: SizedBox(
                   height: 170,
                   width: 350,
                   child: Center(
-                    child: CircularProgressIndicator(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 5),
+                        Text("Fetching odds.."),
+                      ],
+                    ),
                     ),
                 ),
               ),
             ] else if(displayBets && !selectedBet)...[
               GestureDetector(
                 child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                   margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                   child: Column(
                     children: [
@@ -322,8 +355,60 @@ class _DashboardState extends State<Dashboard> {
                             height: 100,
                             child: GestureDetector(
                               onTap: (){
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return StatefulBuilder(
+                                        builder: (BuildContext context, void Function(void Function()) setState) {
+                                          return AlertDialog(
+                                            title: Text("Bet on ${_gameModel?[currentIndex].homeTeam?.nickname}"),
+                                            content: SizedBox(
+                                              height: 100,
+                                              child: Column(
+                                                children: [
+                                                  Text("${_odds?[currentIndex]![0].homeOdds}"),
+                                                  Slider(
+                                                    value: _currentSliderValue,
+                                                    max: 100,
+                                                    divisions: 100,
+                                                    label: _currentSliderValue.round().toString(),
+                                                    onChanged: (double value) {
+                                                      setState(() {
+                                                        _currentSliderValue = value;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Text("Betting ${_odds?[currentIndex]![0].awayOdds} * ${_currentSliderValue}"),
+                                                ],
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    //set user bet
+                                                  });
+                                                },
+                                                child: Text("Cancel"),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    //set user bet
+                                                  });
+                                                },
+                                                child: Text("Done"),
+                                              ),
+                                            ],
+                                          );
+                                        }
+                                    );
+                                  },
+                                );
                                 setState(() {
-                                  //change when user can make bet
+                                  //change when user can set bet
                                   _odds?[currentIndex]![0].status == "NS" ?
                                   null : null;
                                 });
@@ -340,7 +425,7 @@ class _DashboardState extends State<Dashboard> {
                                     ),
                                     const SizedBox(height: 10,),
                                     Text(
-                                      "${_odds?[currentIndex]![0].homeOdds}", // need to fix_odds.,_odds[0].homeOdds,
+                                      "${_odds?[currentIndex]![0].homeOdds}",
                                       style: const TextStyle(fontSize: 18),
                                     ),
                                   ],
@@ -354,6 +439,58 @@ class _DashboardState extends State<Dashboard> {
                             height: 100,
                             child: GestureDetector(
                               onTap: (){
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return StatefulBuilder(
+                                      builder: (BuildContext context, void Function(void Function()) setState) {
+                                        return AlertDialog(
+                                          title: Text("Bet on ${_gameModel?[currentIndex].visitorTeam?.nickname}"),
+                                          content: SizedBox(
+                                            height: 100,
+                                            child: Column(
+                                              children: [
+                                                Text("${_odds?[currentIndex]![0].awayOdds}"),
+                                                Slider(
+                                                  value: _currentSliderValue,
+                                                  max: 100,
+                                                  divisions: 100,
+                                                  label: _currentSliderValue.round().toString(),
+                                                  onChanged: (double value) {
+                                                    setState(() {
+                                                      _currentSliderValue = value;
+                                                    });
+                                                  },
+                                                ),
+                                                Text("Betting ${_odds?[currentIndex]![0].awayOdds} * ${_currentSliderValue}"),
+                                              ],
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                setState(() {
+                                                  //set user bet
+                                                });
+                                              },
+                                              child: Text("Cancel"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                setState(() {
+                                                  //set user bet
+                                                });
+                                              },
+                                              child: Text("Done"),
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                    );
+                                  },
+                                );
                                 setState(() {
                                   //change when user can make bet
                                   _odds?[currentIndex]![0].status == "NS" ?
@@ -544,12 +681,17 @@ class _DashboardState extends State<Dashboard> {
                                 return Container(
                                   margin: EdgeInsets.fromLTRB(10, 0, 10,0),
                                   color: Colors.amberAccent,
-                                  child: Card(
-                                    child: ListTile(
-                                      leading: Text(snapshot.data[index].conference.rank.toString()),
-                                      title: Text(snapshot.data[index].eastTeam.name.toString()),
-                                      subtitle: Text("${snapshot.data[index].win.total.toString()} - ${snapshot.data[index].loss.total.toString()}"),
-                                      trailing: Text(snapshot.data[index].conference.name.toString().toUpperCase()),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push((context), MaterialPageRoute(builder: (context) => TeamSchedule(snapshot.data[index].eastTeam.name.toString(), snapshot.data[index].eastTeam.id.toString())));
+                                    },
+                                    child: Card(
+                                      child: ListTile(
+                                        leading: Text(snapshot.data[index].conference.rank.toString()),
+                                        title: Text(snapshot.data[index].eastTeam.name.toString()),
+                                        subtitle: Text("${snapshot.data[index].win.total.toString()} - ${snapshot.data[index].loss.total.toString()}"),
+                                        trailing: Text(snapshot.data[index].conference.name.toString().toUpperCase()),
+                                      ),
                                     ),
                                   ),
                                     // // Column(
