@@ -355,6 +355,7 @@ class _DashboardState extends State<Dashboard> {
                             height: 100,
                             child: GestureDetector(
                               onTap: (){
+                                _odds?[currentIndex]![0].status == "NS" ?
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -378,7 +379,7 @@ class _DashboardState extends State<Dashboard> {
                                                       });
                                                     },
                                                   ),
-                                                  Text("Betting ${_odds?[currentIndex]![0].awayOdds} * ${_currentSliderValue}"),
+                                                  Text("Betting ${_odds?[currentIndex]![0].homeOdds} * ${_currentSliderValue}"),
                                                 ],
                                               ),
                                             ),
@@ -406,12 +407,7 @@ class _DashboardState extends State<Dashboard> {
                                         }
                                     );
                                   },
-                                );
-                                setState(() {
-                                  //change when user can set bet
-                                  _odds?[currentIndex]![0].status == "NS" ?
-                                  null : null;
-                                });
+                                ) : null;
                               },
                               child: Card(
                                 color: Colors.white70,
@@ -439,6 +435,7 @@ class _DashboardState extends State<Dashboard> {
                             height: 100,
                             child: GestureDetector(
                               onTap: (){
+                                _odds?[currentIndex]![0].status == "NS" ?
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -490,12 +487,7 @@ class _DashboardState extends State<Dashboard> {
                                       }
                                     );
                                   },
-                                );
-                                setState(() {
-                                  //change when user can make bet
-                                  _odds?[currentIndex]![0].status == "NS" ?
-                                  null : null;
-                                });
+                                ) : null;
                               },
                               child: Card(
                                 color: Colors.white70,

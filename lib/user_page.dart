@@ -23,25 +23,25 @@ class _UserPageState extends State<UserPage> {
     _passwordController = TextEditingController();
   }
 
-  void toggleSwitch(bool value) {
-
-    if(isSwitched == false)
-    {
-      setState(() {
-        isSwitched = true;
-        textValue = 'Switch Button is ON';
-      });
-      print('Switch Button is ON');
-    }
-    else
-    {
-      setState(() {
-        isSwitched = false;
-        textValue = 'Switch Button is OFF';
-      });
-      print('Switch Button is OFF');
-    }
-  }
+  // void toggleSwitch(bool value) {
+  //
+  //   if(isSwitched == false)
+  //   {
+  //     setState(() {
+  //       isSwitched = true;
+  //       textValue = 'Switch Button is ON';
+  //     });
+  //     print('Switch Button is ON');
+  //   }
+  //   else
+  //   {
+  //     setState(() {
+  //       isSwitched = false;
+  //       textValue = 'Switch Button is OFF';
+  //     });
+  //     print('Switch Button is OFF');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -88,29 +88,29 @@ class _UserPageState extends State<UserPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10,),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        const Text(
-                          "Notifications",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        Transform.scale(
-                          scale: 1,
-                          child: Switch(
-                            onChanged: toggleSwitch,
-                            value: isSwitched,
-                            activeColor: Colors.blue,
-                            activeTrackColor: Colors.yellow,
-                            inactiveThumbColor: Colors.redAccent,
-                            inactiveTrackColor: Colors.orange,
-                          )
-                        ),
-                      ]
-                    ),
-                  ),
+                  //SizedBox(height: 10,),
+                  // Align(
+                  //   alignment: Alignment.centerLeft,
+                  //   child: Row(
+                  //     children: [
+                  //       const Text(
+                  //         "Notifications",
+                  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  //       ),
+                  //       Transform.scale(
+                  //         scale: 1,
+                  //         child: Switch(
+                  //           onChanged: toggleSwitch,
+                  //           value: isSwitched,
+                  //           activeColor: Colors.blue,
+                  //           activeTrackColor: Colors.yellow,
+                  //           inactiveThumbColor: Colors.redAccent,
+                  //           inactiveTrackColor: Colors.orange,
+                  //         )
+                  //       ),
+                  //     ]
+                  //   ),
+                  // ),
                   SizedBox(
                     height: 30,
                   ), TextButton(
