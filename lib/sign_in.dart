@@ -83,18 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       final user = await _auth.signInWithEmailAndPassword(
                           email: email, password: password);
-
-                      final userMap = <String, dynamic>{
-                        "UID": user.user?.uid,
-                        "email": user.user?.email,
-                        "favoriteLeague": "NBA",
-                        "gamesPredictedCorrect":0,
-                        "gamesPredictedIncorrect": 0,
-                        "isMember": false,
-                        "totalPredictions": 0,
-                      };
                       if (_auth.currentUser != null) {
-                       await db.collection("users").doc(user.user?.uid).set(userMap).onError((e, _) => print("Error writing document: $e"));
                         Navigator.pushNamed(context, "/dash");
                         //need to navigate to dash
                       } else {

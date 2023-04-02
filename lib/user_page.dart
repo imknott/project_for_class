@@ -231,6 +231,15 @@ class _UserPageState extends State<UserPage> {
                     },
                     child: Text('Delete'),
                   ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                        backgroundColor: Colors.black12
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/addFriend');
+                    },
+                    child: Text('Add Friend'),
+                  ),
                 ],
               ),
             ),

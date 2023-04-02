@@ -14,7 +14,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String email = '';
   String password = '';
   String confirmPassword = '';
-  var db = FirebaseFirestore.instance;
+  late FirebaseFirestore db;
 
   @override
   void initState() {
@@ -24,6 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void initFirebase() async {
     await Firebase.initializeApp();
+    db = FirebaseFirestore.instance;
     _auth = FirebaseAuth.instance;
   }
 
@@ -96,7 +97,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     try {
                       final newUser = await _auth.createUserWithEmailAndPassword(
                           email: email, password: password);
+                      final userMap = <String, dynamic>{
+                        "UID": newUser.user?.uid,
+                        "email": newUser.user?.email,
+                        "favoriteLeague": "NBA",
+                        "gamesPredictedCorrect":0,
+                        "gamesPredictedIncorrect": 0,
+                        "isMember": false,
+                        "totalPredictions": 0,
+                      };
+
+                      final standingMap = <String, dynamic>{
+                        "uid": newUser.user?.uid,
+                        "totalGuessedPercentage": 0.00,
+                        "standing": 1,
+                      };
+
                       if(_auth.currentUser != null){
+                        await db.collection("users").doc(newUser.user?.uid).set(userMap).onError((e, _) => print("Error writing document: $e"));
+                        await db.collection("Standings").doc(newUser.user?.uid).set(standingMap).onError((e, _) => print("Error writing document: $e"));
                         Navigator.pushNamed(context, "/dash");
 
                       }else{

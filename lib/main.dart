@@ -6,6 +6,7 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:project_for_class/add_friend.dart';
 import 'package:project_for_class/dashboard.dart';
 import 'package:project_for_class/league_selection.dart';
 import 'package:project_for_class/new_dash.dart';
@@ -142,7 +143,7 @@ class _OnboardingState extends State<Onboarding> {
     return Container(
         child: Center(
           child: Text(
-            'Stay up to date with the NBA',
+            'Track your favorite teams and bet on which team will win.',
             style: TextStyle(
               fontSize: 20,
             ),
@@ -157,16 +158,12 @@ class _OnboardingState extends State<Onboarding> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Check scores',
-                style: TextStyle(
-                  fontSize: 20,
-                ),
-              ),
-              Text(
-                'and place bets',
-                style: TextStyle(
-                  fontSize: 20,
+              Align(alignment: Alignment.centerRight,
+                child: Text(
+                  'Predict the results well enough and you could find yourself ranked #1',
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
                 ),
               ),
             ],
@@ -179,7 +176,7 @@ class _OnboardingState extends State<Onboarding> {
     return Container(
         child: Center(
           child: Text(
-            'Compete with your friends!',
+            'Create an account today',
             style: TextStyle(
               fontSize: 20,
             ),
@@ -205,6 +202,9 @@ class MyApp extends StatelessWidget {
         // },
         '/test': (context){
           return const Home();
+        },
+        '/addFriend': (context){
+          return CloudFirestoreSearch();
         },
         '/register': (context) {
           return RegisterScreen();

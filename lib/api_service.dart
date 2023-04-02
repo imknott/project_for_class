@@ -58,8 +58,27 @@ class nbaApi {
     }
   }
 
+  Future<List<Scores>> getGameInfo(String id) async {
+    try {
+      Response res = await get(
+          Uri.parse('https://api-nba-v1.p.rapidapi.com/games?id=$id'),
+          headers: headers);
+      if (res.statusCode == 200) {
+        var homeMap = json.decode(res.body)['response'] as List;
+        print(json.decode(res.body));
+        final homeList =
+        homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
+        return homeList;
+      } else {
+        throw Exception("Failed to load data from API");
+      }
+    } catch (e) {
+      throw Exception("Failed to connect to API: $e");
+    }
+  }
+
   Future<List<Scores>> getTodayGames() async {
-    DateTime timeToday = DateTime.now(); //DateTime(2023, 04, 01);
+    DateTime timeToday = DateTime.now();
     String timeStr = "${timeToday.year}-0${timeToday.month}-0${timeToday.day}";
     print(timeStr);
     try {
@@ -71,6 +90,25 @@ class nbaApi {
         print(json.decode(res.body));
         final homeList =
             homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
+        return homeList;
+      } else {
+        throw Exception("Failed to load data from API");
+      }
+    } catch (e) {
+      throw Exception("Failed to connect to API: $e");
+    }
+  }
+
+  Future<List<Scores>> getTeamsGames(String id) async {
+    try {
+      Response res = await get(
+          Uri.parse('https://api-nba-v1.p.rapidapi.com/games?season=2022&team=$id'),
+          headers: headers);
+      if (res.statusCode == 200) {
+        var homeMap = json.decode(res.body)['response'] as List;
+        print(json.decode(res.body));
+        final homeList =
+        homeMap.map<Scores>((e) => Scores.fromJson(e)).toList();
         return homeList;
       } else {
         throw Exception("Failed to load data from API");
@@ -124,6 +162,8 @@ class nbaApi {
 class Scores {
   int? gameId;
   String? time;
+  int? id;
+  Date? date;
   VisitorTeam? visitorTeam;
   HomeTeam? homeTeam;
   Visitors? visitor;
@@ -132,6 +172,8 @@ class Scores {
   Scores({
     required this.gameId,
     required this.time,
+    required this.id,
+    required this.date,
     required this.visitorTeam,
     required this.homeTeam,
     required this.visitor,
@@ -141,6 +183,8 @@ class Scores {
     return Scores(
       gameId: json['id'],
       time: json['date']['start'],
+      id: json['id'],
+      date: Date.fromJson(json['date']),
       visitorTeam: VisitorTeam.fromJson(json['teams']['visitors']),
       homeTeam: HomeTeam.fromJson(json['teams']['home']),
       visitor: Visitors.fromJson(json['scores']['visitors']),
@@ -149,11 +193,39 @@ class Scores {
   }
 
   Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date,
         'visitorTeam': visitorTeam,
         'homeTeam': homeTeam,
         'visitor': visitor,
         'home': home,
       };
+}
+
+class Date {
+  String? start;
+  String? end;
+  String? duration;
+
+  Date({
+    required this.start,
+    required this.end,
+    required this.duration,
+  });
+
+  factory Date.fromJson(Map<String, dynamic> json) {
+    return Date(
+      start: json['start'],
+      end: json['end'],
+      duration: json['duration'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'start': start,
+    'end': end,
+    'duration': duration,
+  };
 }
 
 class Conference {

@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:project_for_class/sign_in.dart';
+import 'package:project_for_class/team_schedule.dart';
 import 'package:project_for_class/user_page.dart';
 import 'package:project_for_class/user_rankings.dart';
 import 'api_service.dart';
@@ -46,6 +47,7 @@ class _DashboardState extends State<Dashboard> {
   late List<List<Odds>?>? _odds;
   late List<Standings>? awaitedStandings = [];
   List<MatchId>? _matchIds = [];
+  late FirebaseFirestore db;
 
   var user = FirebaseAuth.instance.currentUser?.email;
 
@@ -64,7 +66,8 @@ class _DashboardState extends State<Dashboard> {
         betsReady = true;
       });
     });
-
+    _getOdds();
+    db = FirebaseFirestore.instance;
     if (FirebaseAuth.instance.currentUser != null) {
       authenticated = true;
     }
@@ -164,7 +167,10 @@ class _DashboardState extends State<Dashboard> {
                               child: Column(
                                 children: [
                                   TextButton(
-                                    onPressed: () => {},
+                                    onPressed: () => {
+                                      Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) =>  TeamSchedule("${item.homeTeam?.name.toString()}","${item.homeTeam?.id.toString()}"))),
+                                    },
                                     style: TextButton.styleFrom(
                                       foregroundColor: Colors.black,
                                     ),

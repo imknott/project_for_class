@@ -1,3 +1,14 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:project_for_class/odds_api.dart';
+import 'package:http/http.dart';
+
+import 'api_service.dart';
+import 'new_dash.dart';
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
@@ -201,8 +212,8 @@ Future<List<Odds>?> fetchOdds() async {
   try {
     Response response = await get(
       //to change
-      Uri.parse('https://v1.basketball.api-sports.io/odds?season=2022-2023&bet=2&league=12'),
-      headers: headers
+        Uri.parse('https://v1.basketball.api-sports.io/odds?season=2022-2023&bet=2&league=12'),
+        headers: headers
     );
     if (response.statusCode == 200) {
       var decodedResponse = jsonDecode(response.body)['response'];
@@ -214,5 +225,3 @@ Future<List<Odds>?> fetchOdds() async {
   }
   return null;
 }
-
-

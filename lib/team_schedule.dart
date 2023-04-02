@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'api_service.dart';
 import 'match_page.dart';
 import 'dashboard.dart';
 
@@ -7,20 +8,33 @@ List<String> awayTeams = [
 ];
 
 class TeamSchedule extends StatefulWidget {
-
-  final String leagueName;
+  final String id;
   final String teamName;
-  TeamSchedule(this.teamName, this.leagueName);
+
+  TeamSchedule(this.teamName,this.id);
 
   @override
-  State<TeamSchedule> createState() => _TeamScheduleState(teamName, leagueName);
+  State<TeamSchedule> createState() => _TeamScheduleState(teamName,id);
 }
 
 class _TeamScheduleState extends State<TeamSchedule> {
   final String teamName;
-  final String leagueName;
-  _TeamScheduleState(this.teamName, this.leagueName);
+  final String id;
+  _TeamScheduleState(this.teamName,this.id);
+  late List<Scores>? _gameModel = [];
 
+  @override
+  void initState() {
+    super.initState();
+    _getData();
+  }
+
+  void _getData() async {
+    _gameModel = (await nbaApi().getTeamsGames(id));
+
+    // Simulate QUERY time for the real API call
+    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,12 +51,15 @@ class _TeamScheduleState extends State<TeamSchedule> {
           ),
         ],
       ),
-      body: GridView.builder(
+      body: _gameModel == null || _gameModel!.isEmpty
+    ? const Center(
+        child: CircularProgressIndicator(),
+      ) : GridView.builder(
         gridDelegate:
         const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
-        itemCount: awayTeams.length,
+        itemCount: _gameModel?.length,
         itemBuilder: (context, index) {
           return GestureDetector(
             child: Card(
@@ -50,19 +67,19 @@ class _TeamScheduleState extends State<TeamSchedule> {
               child: Column(
                 children: [
                   SizedBox(height: 20),
-                  Text(teamName),
+                  Text("${_gameModel![index].homeTeam?.nickname}"),
                   SizedBox(height: 50),
                   Text(
                     'Date of game or result of game',
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 50),
-                  Text(awayTeams[index]),
+                  Text("${_gameModel![index].visitorTeam?.nickname}"),
                 ],
               ),
             ),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Match(leagueName, teamName, awayTeams[index])));
+              //Navigator.push(context, MaterialPageRoute(builder: (context) => Match( teamName, awayTeams[index])));
             },
           );
         },
