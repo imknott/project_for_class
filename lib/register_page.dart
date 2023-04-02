@@ -105,12 +105,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         "gamesPredictedIncorrect": 0,
                         "isMember": false,
                         "totalPredictions": 0,
+                        "search"
+                        "totalBetPoints": 2000,
                       };
 
                       final standingMap = <String, dynamic>{
-                        "uid": newUser.user?.uid,
+                        "email": newUser.user?.email,
                         "totalGuessedPercentage": 0.00,
-                        "standing": 1,
                       };
 
                       if(_auth.currentUser != null){
