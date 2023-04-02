@@ -142,7 +142,7 @@ class _OnboardingState extends State<Onboarding> {
     return Container(
         child: Center(
           child: Text(
-            'p1',
+            'Stay up to date with the NBA',
             style: TextStyle(
               fontSize: 20,
             ),
@@ -158,13 +158,13 @@ class _OnboardingState extends State<Onboarding> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'p2',
+                'Check scores',
                 style: TextStyle(
                   fontSize: 20,
                 ),
               ),
               Text(
-                'p2',
+                'and place bets',
                 style: TextStyle(
                   fontSize: 20,
                 ),
@@ -179,7 +179,7 @@ class _OnboardingState extends State<Onboarding> {
     return Container(
         child: Center(
           child: Text(
-            'p3',
+            'Compete with your friends!',
             style: TextStyle(
               fontSize: 20,
             ),

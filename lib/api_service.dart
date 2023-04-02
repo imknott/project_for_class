@@ -13,6 +13,7 @@ class nbaApi {
       "https://api-nba-v1.p.rapidapi.com/teams?conference=East";
 
   static const headers = {
+    //'x-rapidapi-key': '1bb8997ee5e91a27b5b22bacc064405a',
     'X-RapidAPI-Key': 'd45f0c70cfmsh782b01571662568p14e128jsn4b5d31ee0db8',
     'X-RapidAPI-Host': 'api-nba-v1.p.rapidapi.com'
   };
@@ -58,7 +59,7 @@ class nbaApi {
   }
 
   Future<List<Scores>> getTodayGames() async {
-    DateTime timeToday = DateTime(2023, 04, 01);
+    DateTime timeToday = DateTime.now(); //DateTime(2023, 04, 01);
     String timeStr = "${timeToday.year}-0${timeToday.month}-0${timeToday.day}";
     print(timeStr);
     try {
@@ -121,12 +122,16 @@ class nbaApi {
 }
 
 class Scores {
+  int? gameId;
+  String? time;
   VisitorTeam? visitorTeam;
   HomeTeam? homeTeam;
   Visitors? visitor;
   Home? home;
 
   Scores({
+    required this.gameId,
+    required this.time,
     required this.visitorTeam,
     required this.homeTeam,
     required this.visitor,
@@ -134,6 +139,8 @@ class Scores {
   });
   factory Scores.fromJson(Map<String, dynamic> json) {
     return Scores(
+      gameId: json['id'],
+      time: json['date']['start'],
       visitorTeam: VisitorTeam.fromJson(json['teams']['visitors']),
       homeTeam: HomeTeam.fromJson(json['teams']['home']),
       visitor: Visitors.fromJson(json['scores']['visitors']),
