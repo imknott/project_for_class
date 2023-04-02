@@ -83,6 +83,7 @@ class StandingsTable {
 class PredictedTeam {
   final double? awayScore;
   final int? gameId;
+  final int? bet;
   final bool? isFinished;
   final double? homeScore;
   final String? homeTeam;
@@ -92,6 +93,7 @@ class PredictedTeam {
   PredictedTeam({
     this.awayScore,
     this.gameId,
+    this.bet,
     this.isFinished,
     this.homeScore,
     this.homeTeam,
@@ -108,6 +110,7 @@ class PredictedTeam {
         awayScore: data?['awayScore'],
         isFinished: data?['finished'],
         gameId: data?['gameId'],
+        bet: data?['bet'],
         homeScore: data?['homeScore'],
       homeTeam: data?['homeTeam'],
       teamPredictedToWin: data?['teamPredictedToWin'],
@@ -120,6 +123,7 @@ class PredictedTeam {
       if(awayScore != null) "awayScore": awayScore,
       if(isFinished != null) "finished": isFinished,
       if(gameId != null) "awayScore": gameId,
+      if(bet != null) "bet": bet,
       if(homeScore != null) "homeScore": homeScore,
       if(homeTeam != null) "homeTeam": homeTeam,
       if(teamPredictedToWin != null) "teamPredictedToWin": teamPredictedToWin,
