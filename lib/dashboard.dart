@@ -25,6 +25,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   final controller = ScrollController();
   int currentIndex = 0;
+  double _currentSliderValue = 20;
 
   bool authenticated = false;
   bool displayBets = false;
@@ -48,7 +49,10 @@ class _DashboardState extends State<Dashboard> {
   late FirebaseFirestore db;
   var user = FirebaseAuth.instance.currentUser?.email;
 
-  late Stream<QuerySnapshot<Map<String, dynamic>>> _rank = db.collection('Standings').orderBy("guessedRightPercentage", descending: true).snapshots();
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _rank = db
+      .collection('Standings')
+      .orderBy("guessedRightPercentage", descending: true)
+      .snapshots();
 
   // This controller will store the value of the search bar
   final TextEditingController _searchController = TextEditingController();
@@ -352,9 +356,12 @@ class _DashboardState extends State<Dashboard> {
                                   child: GestureDetector(
                                     onTap: () {
                                       final userGameMap = <String, dynamic>{
-                                        "gameId": _gameModel?[currentIndex].gameId,
-                                        "teamName": _gameModel?[currentIndex].homeTeam?.name,
-                                        "isFinished" : false,
+                                        "gameId":
+                                            _gameModel?[currentIndex].gameId,
+                                        "teamName": _gameModel?[currentIndex]
+                                            .homeTeam
+                                            ?.name,
+                                        "isFinished": false,
                                       };
                                       final snackBar = SnackBar(
                                         content: Text(
@@ -363,7 +370,13 @@ class _DashboardState extends State<Dashboard> {
                                         action: SnackBarAction(
                                           label: 'Yes 250 creds',
                                           onPressed: () async {
-                                            await db.collection("predictedgames").doc(FirebaseAuth.instance.currentUser?.uid).set(userGameMap).onError((e, _) => print("Error writing document: $e"));
+                                            await db
+                                                .collection("predictedgames")
+                                                .doc(FirebaseAuth
+                                                    .instance.currentUser?.uid)
+                                                .set(userGameMap)
+                                                .onError((e, _) => print(
+                                                    "Error writing document: $e"));
                                             _gameModel?.removeAt(currentIndex);
                                             // Some code to undo the change.
                                           },
@@ -416,12 +429,17 @@ class _DashboardState extends State<Dashboard> {
                                   child: GestureDetector(
                                     onTap: () {
                                       final userGameMap = <String, dynamic>{
-                                        "gameId": _gameModel?[currentIndex].gameId,
-                                        "teamName": _gameModel?[currentIndex].visitorTeam?.name,
-                                        "isFinished" : false,
+                                        "gameId":
+                                            _gameModel?[currentIndex].gameId,
+                                        "teamName": _gameModel?[currentIndex]
+                                            .visitorTeam
+                                            ?.name,
+                                        "isFinished": false,
                                       };
 
-                                      var userRef = db.collection("users").doc(FirebaseAuth.instance.currentUser?.uid);
+                                      var userRef = db.collection("users").doc(
+                                          FirebaseAuth
+                                              .instance.currentUser?.uid);
                                       final snackBar = SnackBar(
                                         content: Text(
                                           "Would you like to bet on ${_gameModel?[currentIndex].visitorTeam?.nickname}",
@@ -429,8 +447,15 @@ class _DashboardState extends State<Dashboard> {
                                         action: SnackBarAction(
                                           label: 'Yes 250 creds',
                                           onPressed: () async {
-                                            await db.collection("predictedgames").doc(FirebaseAuth.instance.currentUser?.uid).set(userGameMap).onError((e, _) => print("Error writing document: $e"));
-                                            Navigator.pushNamed(context, '/dash');
+                                            await db
+                                                .collection("predictedgames")
+                                                .doc(FirebaseAuth
+                                                    .instance.currentUser?.uid)
+                                                .set(userGameMap)
+                                                .onError((e, _) => print(
+                                                    "Error writing document: $e"));
+                                            Navigator.pushNamed(
+                                                context, '/dash');
                                             // Some code to undo the change.
                                           },
                                         ),
@@ -568,23 +593,23 @@ class _DashboardState extends State<Dashboard> {
                               builder: (BuildContext context,
                                   AsyncSnapshot<dynamic> snapshot) {
                                 if (snapshot.hasData) {
-
                                   //checks if the response returns valid data
                                   return ListView.builder(
                                       itemCount: snapshot.data?.docs.length,
                                       itemBuilder: (context, index) {
-                                        DocumentSnapshot data = snapshot.data
-                                            ?.docs[index] as DocumentSnapshot<Object?>;
+                                        DocumentSnapshot data =
+                                            snapshot.data?.docs[index]
+                                                as DocumentSnapshot<Object?>;
                                         return Container(
                                           margin:
                                               EdgeInsets.fromLTRB(10, 0, 10, 0),
                                           color: Colors.amber,
                                           child: Card(
                                             child: ListTile(
-                                              leading: Text('${index +1}'),
+                                              leading: Text('${index + 1}'),
                                               title: Text('${data['email']}'),
-                                              subtitle:
-                                                  Text("win % - ${data['guessedRightPercentage']}"),
+                                              subtitle: Text(
+                                                  "win % - ${data['guessedRightPercentage']}"),
                                               trailing: Text("2000 creds"),
                                             ),
                                           ),

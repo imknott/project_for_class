@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'api_service.dart';
-import 'match_page.dart';
-import 'dashboard.dart';
-
-List<String> awayTeams = [
-  'Away team 1', 'Away team 2', 'Away team 3', 'Away team 4', 'Away team 5', 'Away team 6', 'Away team 7'
-];
 
 class TeamSchedule extends StatefulWidget {
   final String id;
@@ -40,16 +35,8 @@ class _TeamScheduleState extends State<TeamSchedule> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('${teamName} Schedule'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.dashboard),
-            onPressed: () {
-              // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-              //     builder: (context) => Dashboard()), (route) => false);
-            },
-          ),
-        ],
+        title: Text('${teamName} Matches'),
+        backgroundColor: Colors.amber,
       ),
       body: _gameModel == null || _gameModel!.isEmpty
     ? const Center(
@@ -61,26 +48,32 @@ class _TeamScheduleState extends State<TeamSchedule> {
         ),
         itemCount: _gameModel?.length,
         itemBuilder: (context, index) {
-          return GestureDetector(
-            child: Card(
-              //child: Image(image: AssetImage('images/trophy.png')),
-              child: Column(
-                children: [
-                  SizedBox(height: 20),
-                  Text("${_gameModel![index].homeTeam?.nickname}"),
-                  SizedBox(height: 50),
+          return Card(
+            child: Column(
+              children: [
+                SizedBox(height: 30),
+                Text("${_gameModel![index].homeTeam?.nickname}"),
+                SizedBox(height: 20),
+                if((_gameModel![index].time)!.compareTo(DateTime.now().toString()) < 0)...[
                   Text(
-                    'Date of game or result of game',
-                    textAlign: TextAlign.center,
+                    _gameModel![index].home?.points==null ?
+                      "score unavailable" : "${_gameModel![index].home?.points}",
+                    style: TextStyle(fontSize: 20),
                   ),
-                  SizedBox(height: 50),
-                  Text("${_gameModel![index].visitorTeam?.nickname}"),
+                  Text("-"),
+                  Text(
+                    _gameModel![index].visitor?.points==null ?
+                    "score unavailable" : "${_gameModel![index].visitor?.points}",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ] else...[
+                  Text("${DateFormat.yMMMd().format(DateTime.parse(_gameModel![index].time!).toLocal())}",),
+                  Text("${DateFormat.Hm().format(DateTime.parse(_gameModel![index].time!).toLocal())}",),
                 ],
-              ),
+                SizedBox(height: 20),
+                Text("${_gameModel![index].visitorTeam?.nickname}"),
+              ],
             ),
-            onTap: () {
-              //Navigator.push(context, MaterialPageRoute(builder: (context) => Match( teamName, awayTeams[index])));
-            },
           );
         },
       ),
